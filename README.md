@@ -1,0 +1,2 @@
+# EduQuiz
+Plataforma educativa EduQuiz
