@@ -1,0 +1,6258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduQuiz</title>
+
+<link rel="icon" href="data:image/svg+xml,
+<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
+<text y=%22.9em%22 font-size=%2290%22>Q</text>
+</svg>">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#1f2937;
+}
+
+button,
+input,
+textarea,
+select{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+    border:none;
+}
+
+.hidden{
+    display:none !important;
+}
+
+/* =========================
+   AUTH
+========================= */
+
+#authScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    padding:20px;
+}
+
+.auth-box{
+    width:100%;
+    max-width:420px;
+    background:white;
+    border-radius:20px;
+    padding:35px;
+    box-shadow:0 20px 50px rgba(0,0,0,.18);
+}
+
+.logo-big{
+    width:70px;
+    height:70px;
+    border-radius:18px;
+    background:#4f46e5;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:38px;
+    font-weight:bold;
+    margin:0 auto 15px;
+}
+
+.auth-box h1{
+    text-align:center;
+    margin-bottom:8px;
+}
+
+.auth-box p{
+    text-align:center;
+    color:#6b7280;
+    margin-bottom:25px;
+}
+
+.field{
+    margin-bottom:15px;
+}
+
+.field label{
+    display:block;
+    font-size:14px;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+.field input,
+.field textarea,
+.field select{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    outline:none;
+    background:white;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus{
+    border-color:#4f46e5;
+    box-shadow:0 0 0 3px rgba(79,70,229,.1);
+}
+
+#authScreen .field input,
+#authScreen .field textarea,
+#authScreen .field select,
+#loginEmail,
+#loginPassword,
+#newPassword,
+#confirmNewPassword{
+    color:#111827;
+    background:#ffffff;
+    -webkit-text-fill-color:#111827;
+    caret-color:#4f46e5;
+}
+
+#authScreen .field input::placeholder{
+    color:#6b7280;
+    -webkit-text-fill-color:#6b7280;
+    opacity:1;
+}
+
+.field input:disabled{
+    background:#f3f4f6;
+    cursor:not-allowed;
+}
+
+.primary{
+    background:#4f46e5;
+    color:white;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.primary:hover{
+    background:#4338ca;
+}
+
+.secondary{
+    background:#eef2ff;
+    color:#4338ca;
+    padding:10px 16px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.danger{
+    background:#fee2e2;
+    color:#b91c1c;
+    padding:10px 16px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.auth-actions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.auth-actions button{
+    flex:1;
+}
+
+.auth-switch{
+    margin-top:18px;
+    text-align:center;
+    color:#4f46e5;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* =========================
+   APP
+========================= */
+
+#app{
+    min-height:100vh;
+    display:flex;
+}
+
+.sidebar{
+    width:245px;
+    min-height:100vh;
+    background:white;
+    border-right:1px solid #e5e7eb;
+    padding:20px 15px;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    z-index:20;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:22px;
+    font-weight:bold;
+    color:#4f46e5;
+    padding:5px 10px 25px;
+}
+
+.logo-q{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    background:#4f46e5;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:23px;
+}
+
+.teacher-mini{
+    background:#f4f7fb;
+    border-radius:14px;
+    padding:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.teacher-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:23px;
+}
+
+.teacher-mini strong{
+    display:block;
+    font-size:13px;
+}
+
+.teacher-mini small{
+    color:#6b7280;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.nav button{
+    width:100%;
+    text-align:left;
+    padding:12px;
+    border-radius:10px;
+    background:transparent;
+    color:#4b5563;
+    font-weight:bold;
+}
+
+.nav button:hover,
+.nav button.active{
+    background:#eef2ff;
+    color:#4f46e5;
+}
+
+.logout{
+    position:absolute;
+    bottom:20px;
+    left:15px;
+    right:15px;
+}
+
+.main{
+    margin-left:245px;
+    width:calc(100% - 245px);
+    padding:30px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.topbar h2{
+    font-size:27px;
+}
+
+.content-section{
+    display:none;
+}
+
+.content-section.active{
+    display:block;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    margin-bottom:25px;
+}
+
+.stat-card{
+    background:white;
+    border-radius:16px;
+    padding:20px;
+    border:1px solid #e5e7eb;
+}
+
+.stat-card small{
+    color:#6b7280;
+}
+
+.stat-card h3{
+    font-size:30px;
+    margin-top:8px;
+    color:#4f46e5;
+}
+
+.panel{
+    background:white;
+    border-radius:16px;
+    border:1px solid #e5e7eb;
+    padding:22px;
+    margin-bottom:20px;
+}
+
+.panel-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.panel-title h3{
+    font-size:18px;
+}
+
+/* =========================
+   ACTIVITIES
+========================= */
+
+.activity-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:18px;
+}
+
+.activity-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:20px;
+}
+
+.activity-card h3{
+    margin-bottom:8px;
+}
+
+.activity-card p{
+    color:#6b7280;
+    font-size:14px;
+    min-height:38px;
+}
+
+.activity-meta{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:15px 0;
+}
+
+.badge{
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:bold;
+    background:#eef2ff;
+    color:#4338ca;
+}
+
+.badge.closed{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.activity-actions{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-top:18px;
+}
+
+.activity-action-group{
+    border-top:1px solid #e5e7eb;
+    padding-top:12px;
+}
+
+.activity-action-group > strong{
+    display:block;
+    color:#6b7280;
+    font-size:12px;
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.activity-action-buttons{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.activity-action-buttons button,
+.activity-action-buttons select{
+    padding:8px 11px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.activity-action-buttons select{
+    border:1px solid #d1d5db;
+    background:white;
+    color:#374151;
+}
+
+/* =========================
+   EDITOR
+========================= */
+
+.question-box{
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:15px;
+    background:#fafbff;
+}
+
+.question-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.question-head strong{
+    color:#4f46e5;
+}
+
+.question-controls{
+    display:grid;
+    grid-template-columns:1fr 140px 110px;
+    gap:10px;
+}
+
+.options-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+}
+
+.correct-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+    font-size:14px;
+}
+
+.editor-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+}
+
+.time-settings{
+    display:grid;
+    grid-template-columns:1fr 180px;
+    gap:12px;
+    align-items:end;
+}
+
+.time-help{
+    display:block;
+    color:#6b7280;
+    margin-top:5px;
+    font-size:13px;
+}
+
+/* =========================
+   RESULTS
+========================= */
+
+.filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+.filters input,
+.filters select{
+    padding:10px;
+    border:1px solid #d1d5db;
+    border-radius:9px;
+    background:white;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    padding:12px;
+    text-align:left;
+    border-bottom:1px solid #e5e7eb;
+    font-size:14px;
+}
+
+th{
+    color:#6b7280;
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+.grade{
+    font-weight:bold;
+    color:#4f46e5;
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+.avatar-grid{
+    display:grid;
+    grid-template-columns:repeat(8,1fr);
+    gap:10px;
+    max-width:650px;
+}
+
+.avatar-option{
+    height:55px;
+    border-radius:12px;
+    background:#f4f7fb;
+    font-size:28px;
+    border:2px solid transparent;
+}
+
+.avatar-option.selected{
+    border-color:#4f46e5;
+    background:#eef2ff;
+}
+
+/* =========================
+   STUDENT
+========================= */
+
+#studentScreen{
+    min-height:100vh;
+    background:#f4f7fb;
+    padding:30px 15px;
+}
+
+.student-container{
+    max-width:850px;
+    margin:auto;
+}
+
+.student-header{
+    background:#4f46e5;
+    color:white;
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:20px;
+}
+
+.student-header h1{
+    margin-bottom:8px;
+}
+
+.student-card{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+    border:1px solid #e5e7eb;
+    margin-bottom:20px;
+}
+
+.warning{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    padding:14px;
+    border-radius:12px;
+    line-height:1.5;
+    margin:15px 0;
+}
+
+.exam-top{
+    position:sticky;
+    top:10px;
+    z-index:10;
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.timer{
+    font-size:20px;
+    font-weight:bold;
+    color:#4f46e5;
+}
+
+.timer.danger-time{
+    color:#dc2626;
+}
+
+.question-number{
+    color:#6b7280;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.student-question{
+    font-size:21px;
+    line-height:1.5;
+    margin-bottom:20px;
+}
+
+.answer-option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:10px;
+    cursor:pointer;
+}
+
+.answer-option:hover{
+    background:#f8faff;
+}
+
+.answer-option.selected{
+    border-color:#4f46e5;
+    background:#eef2ff;
+}
+
+.answer-option input{
+    accent-color:#4f46e5;
+}
+
+.exam-navigation{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:20px;
+}
+
+.result-box{
+    text-align:center;
+    padding:40px 20px;
+}
+
+.result-grade{
+    font-size:60px;
+    color:#4f46e5;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.result-stats{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
+.result-stat{
+    background:#f4f7fb;
+    padding:15px 22px;
+    border-radius:12px;
+}
+
+@media print{
+    .exam-top button,
+    #studentTitle,
+    .student-header{
+        display:none !important;
+    }
+}
+
+/* =========================
+   TOAST
+========================= */
+
+#toast{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:9999;
+    background:#111827;
+    color:white;
+    padding:13px 17px;
+    border-radius:10px;
+    max-width:420px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+    display:none;
+    line-height:1.4;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+    .cards{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .sidebar{
+        width:210px;
+    }
+
+    .main{
+        margin-left:210px;
+        width:calc(100% - 210px);
+    }
+
+    .question-controls{
+        grid-template-columns:1fr;
+    }
+
+    .time-settings{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:700px){
+
+    .sidebar{
+        position:relative;
+        width:100%;
+        min-height:auto;
+    }
+
+    .logout{
+        position:static;
+        margin-top:15px;
+    }
+
+    #app{
+        display:block;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+        padding:18px;
+    }
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .options-grid{
+        grid-template-columns:1fr;
+    }
+
+    .avatar-grid{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     AUTH SCREEN
+========================= -->
+
+<div id="authScreen">
+
+    <div class="auth-box">
+
+        <div class="logo-big">Q</div>
+
+        <h1>EduQuiz</h1>
+        <p>Plataforma educativa de actividades y evaluaciones</p>
+
+        <div id="loginForm">
+
+            <div class="field">
+                <label for="loginEmail">Correo electrónico</label>
+                <input id="loginEmail" type="email" autocomplete="username" placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="field">
+                <label for="loginPassword">Contraseña</label>
+                <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+            </div>
+
+            <div class="auth-actions">
+                <button class="primary" onclick="login()">Iniciar sesión</button>
+            </div>
+
+            <div class="auth-switch" onclick="showRegister()">
+                Crear cuenta
+            </div>
+
+            <div class="auth-switch" onclick="recoverPassword()">
+                ¿Olvidaste tu contraseña?
+            </div>
+
+        </div>
+
+        <div id="registerForm" class="hidden">
+
+            <div class="field">
+                <label>Nombre</label>
+                <input id="registerName" type="text" placeholder="Tu nombre">
+            </div>
+
+            <div class="field">
+                <label>Correo electrónico</label>
+                <input id="registerEmail" type="email" placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="field">
+                <label>Contraseña</label>
+                <input id="registerPassword" type="password" placeholder="Mínimo 6 caracteres">
+            </div>
+
+            <div class="auth-actions">
+                <button class="primary" onclick="register()">Registrarme</button>
+            </div>
+
+            <div class="auth-switch" onclick="showLogin()">
+                Ya tengo una cuenta
+            </div>
+
+        </div>
+
+        <div id="resetPasswordForm" class="hidden">
+
+            <p style="margin-bottom:18px;color:#374151;">
+                Escribe tu nueva contraseña.
+            </p>
+
+            <div class="field">
+                <label for="newPassword">Nueva contraseña</label>
+                <input id="newPassword" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+            </div>
+
+            <div class="field">
+                <label for="confirmNewPassword">Confirmar contraseña</label>
+                <input id="confirmNewPassword" type="password" autocomplete="new-password" placeholder="Repite la contraseña">
+            </div>
+
+            <div class="auth-actions">
+                <button class="primary" onclick="updateRecoveredPassword()">Cambiar contraseña</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     STUDENT SCREEN
+========================= -->
+
+<div id="studentScreen" class="hidden">
+
+    <div class="student-container">
+
+        <div class="student-header">
+
+            <h1 id="studentTitle">EduQuiz</h1>
+
+            <p id="studentDescription"></p>
+
+        </div>
+
+
+        <!-- STUDENT START -->
+
+        <div id="studentStartCard" class="student-card">
+
+            <h2>Datos del estudiante</h2>
+
+            <p style="color:#6b7280;margin:8px 0 20px;">
+                Completa tus datos antes de comenzar.
+            </p>
+
+            <div class="field">
+                <label>Nombre completo</label>
+                <input id="studentName" type="text">
+            </div>
+
+            <div class="field">
+                <label for="studentGroup">Grado y grupo</label>
+                <select id="studentGroup"><option value="">Selecciona un grupo</option></select>
+            </div>
+
+            <div class="field">
+                <label for="studentInstitutionType">Institución</label>
+
+                <select id="studentInstitutionType" onchange="changeInstitutionType()">
+                    <option value="">Selecciona una institución</option>
+                    <option value="__otra__">Otra institución</option>
+                </select>
+
+            </div>
+
+            <div id="otherInstitutionBox" class="field hidden">
+
+                <label>Nombre de la institución</label>
+
+                <input
+                    id="studentOtherInstitution"
+                    type="text"
+                    placeholder="Nombre de la institución"
+                >
+
+            </div>
+
+            <div class="warning">
+
+                Mientras realizas la actividad, si sales de esta página para
+                entrar a otra pestaña o aplicación, EduQuiz registrará la
+                salida y el profesor podrá verla en los resultados.
+
+            </div>
+
+            <button
+                class="primary"
+                style="width:100%;"
+                onclick="startStudentExam()"
+            >
+                Comenzar actividad
+            </button>
+
+        </div>
+
+
+        <!-- EXAM -->
+
+        <div id="studentExam" class="hidden">
+
+            <div class="exam-top">
+
+                <div>
+                    <strong id="examProgress"></strong>
+                </div>
+
+                <div id="timerDisplay" class="timer">
+                    Sin límite
+                </div>
+
+            </div>
+
+            <div class="student-card">
+
+                <div id="studentQuestion"></div>
+
+                <div id="studentAnswerArea"></div>
+
+                <div class="exam-navigation">
+
+                    <button
+                        id="previousQuestionButton"
+                        class="secondary"
+                        onclick="previousStudentQuestion()"
+                    >
+                        Anterior
+                    </button>
+
+                    <button
+                        id="nextQuestionButton"
+                        class="primary"
+                        onclick="nextStudentQuestion()"
+                    >
+                        Siguiente
+                    </button>
+
+                    <button
+                        id="finishQuestionButton"
+                        class="primary hidden"
+                        onclick="finishStudentExam(false)"
+                    >
+                        Terminar actividad
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div id="studentResult" class="student-card hidden">
+
+            <div class="result-box">
+
+                <h2>Actividad terminada</h2>
+
+                <p style="color:#6b7280;">
+                    Tu resultado ha sido registrado.
+                </p>
+
+                <p style="color:#6b7280;margin-top:8px;">
+                    Las respuestas correctas solo estarán disponibles si tu profesor te comparte el enlace de respuestas.
+                </p>
+
+                <div id="studentGrade" class="result-grade">
+                    0.0
+                </div>
+
+                <div class="result-stats">
+
+                    <div class="result-stat">
+                        <strong id="studentCorrect">0</strong>
+                        <br>
+                        Correctas
+                    </div>
+
+                    <div class="result-stat">
+                        <strong id="studentIncorrect">0</strong>
+                        <br>
+                        Incorrectas
+                    </div>
+
+                    <div class="result-stat">
+                        <strong id="studentTotal">0</strong>
+                        <br>
+                        Total
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TEACHER APP
+========================= -->
+
+<div id="app" class="hidden">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-q">Q</div>
+
+            <span>EduQuiz</span>
+
+        </div>
+
+
+        <div class="teacher-mini">
+
+            <div id="sidebarAvatar" class="teacher-avatar">
+                👨‍🏫
+            </div>
+
+            <div>
+                <strong id="sidebarName">Profesor</strong>
+                <small id="sidebarEmail"></small>
+            </div>
+
+        </div>
+
+
+        <div class="nav">
+
+            <button id="navInicio" onclick="showSection('inicio')">
+                🏠 Inicio
+            </button>
+
+            <button id="navActividades" onclick="showSection('actividades')">
+                📚 Actividades
+            </button>
+
+            <button id="navCrear" onclick="newActivity()">
+                ➕ Crear actividad
+            </button>
+
+            <button id="navResultados" onclick="showSection('resultados')">
+                📊 Resultados
+            </button>
+
+            <button id="navInstituciones" onclick="showSection('instituciones')">
+                🏫 Instituciones y grupos
+            </button>
+
+            <button id="navPerfil" onclick="showSection('perfil')">
+                👤 Mi perfil
+            </button>
+
+        </div>
+
+
+        <button
+            class="danger logout"
+            onclick="logout()"
+        >
+            Cerrar sesión
+        </button>
+
+    </aside>
+
+
+    <main class="main">
+
+        <!-- INICIO -->
+
+        <section id="section-inicio" class="content-section">
+
+            <div class="topbar">
+
+                <div>
+                    <h2>Inicio</h2>
+                    <p style="color:#6b7280;">
+                        Resumen de tu actividad en EduQuiz
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="cards">
+
+                <div class="stat-card">
+                    <small>Actividades</small>
+                    <h3 id="statActivities">0</h3>
+                </div>
+
+                <div class="stat-card">
+                    <small>Resultados</small>
+                    <h3 id="statResults">0</h3>
+                </div>
+
+                <div class="stat-card">
+                    <small>Promedio</small>
+                    <h3 id="statAverage">0.0</h3>
+                </div>
+
+                <div class="stat-card">
+                    <small>Último resultado</small>
+                    <h3 id="statLast">—</h3>
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    <h3>Actividad reciente</h3>
+                </div>
+
+                <div id="recentActivity">
+                    No hay actividad reciente.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ACTIVIDADES -->
+
+        <section id="section-actividades" class="content-section">
+
+            <div class="topbar">
+
+                <div>
+                    <h2>Actividades</h2>
+                    <p style="color:#6b7280;">
+                        Administra tus actividades
+                    </p>
+                </div>
+
+                <button class="primary" onclick="newActivity()">
+                    + Crear actividad
+                </button>
+
+            </div>
+
+
+            <div id="activitiesGrid" class="activity-grid"></div>
+
+        </section>
+
+
+        <!-- EDITOR -->
+
+        <section id="section-editor" class="content-section">
+
+            <div class="topbar">
+
+                <div>
+                    <h2 id="editorTitle">Crear actividad</h2>
+                    <p style="color:#6b7280;">
+                        Configura las preguntas de tu actividad
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div id="draftPrompt" class="panel hidden" style="border-left:4px solid #4f46e5">
+                <strong>Tienes un borrador sin terminar.</strong>
+                <p id="draftPromptText" style="color:#64748b;margin:8px 0 14px"></p>
+                <div style="display:flex;gap:10px">
+                    <button class="primary" type="button" onclick="continueDraft()">Continuar</button>
+                    <button class="secondary" type="button" onclick="discardDraft()">Descartar</button>
+                </div>
+            </div>
+
+            <div class="panel">
+
+                <div class="field">
+                    <label>Título</label>
+                    <input id="activityTitle" type="text">
+                </div>
+
+                <div class="field">
+                    <label>Descripción</label>
+                    <textarea id="activityDescription" rows="3"></textarea>
+                </div>
+
+                <!-- NUEVO SISTEMA DE TIEMPO -->
+
+                <div class="field">
+
+                    <label>Tiempo de la actividad</label>
+
+                    <div class="time-settings">
+
+                        <div>
+
+                            <select
+                                id="activityTimeMode"
+                                onchange="changeActivityTimeMode()"
+                            >
+
+                                <option value="limited">
+                                    Tiempo específico
+                                </option>
+
+                                <option value="unlimited">
+                                    Tiempo ilimitado
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div id="specificTimeBox">
+
+                            <input
+                                id="activityTime"
+                                type="number"
+                                min="1"
+                                step="1"
+                                value="10"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <small
+                        id="timeHelp"
+                        class="time-help"
+                    >
+                        El estudiante tendrá un tiempo máximo para completar
+                        la actividad.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-title">
+
+                    <h3>Preguntas</h3>
+
+                    <button
+                        class="secondary"
+                        onclick="addQuestion()"
+                    >
+                        + Agregar pregunta
+                    </button>
+
+                </div>
+
+                <div id="questionsEditor"></div>
+
+            </div>
+
+
+            <div class="editor-footer">
+
+                <small id="draftStatus" style="margin-right:auto;color:#64748b;">Autoguardado activo</small>
+
+                <button
+                    class="secondary"
+                    onclick="showSection('actividades')"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    class="primary"
+                    onclick="saveActivity()"
+                >
+                    Guardar actividad
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULTADOS -->
+
+        <section id="section-resultados" class="content-section">
+
+            <div class="topbar">
+
+                <div>
+                    <h2>Resultados</h2>
+                    <p style="color:#6b7280;">
+                        Resultados enviados por los estudiantes
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="filters">
+
+                    <input
+                        id="resultSearch"
+                        placeholder="Buscar estudiante..."
+                        oninput="renderResults()"
+                    >
+
+                    <select
+                        id="resultActivityFilter"
+                        onchange="renderResults()"
+                    >
+                        <option value="">Todas las actividades</option>
+                    </select>
+
+                    <select
+                        id="resultGroupFilter"
+                        aria-label="Filtrar por grupo"
+                        onchange="renderResults()"
+                    >
+                        <option value="">Todos los grupos</option>
+                    </select>
+
+                    <select
+                        id="resultInstitutionFilter"
+                        aria-label="Filtrar por institución"
+                        onchange="renderResults()"
+                    >
+                        <option value="">Todas las instituciones</option>
+                    </select>
+
+                    <select
+                        id="resultSort"
+                        onchange="renderResults()"
+                    >
+
+                        <option value="date">
+                            Más recientes
+                        </option>
+
+                        <option value="name">
+                            Nombre A-Z
+                        </option>
+
+                        <option value="grade">
+                            Nota
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Actividad</th>
+                                <th>Grupo</th>
+                                <th>Institución</th>
+                                <th>Nota</th>
+                                <th>Correctas</th>
+                                <th>Incorrectas</th>
+                                <th>Salidas</th>
+                                <th>Fecha</th>
+                                <th></th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="resultsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- INSTITUTIONS -->
+
+        <section id="section-instituciones" class="content-section">
+
+            <div class="topbar">
+                <div>
+                    <h2>Instituciones y grupos</h2>
+                    <p style="color:#6b7280;">Configura las opciones disponibles para los estudiantes</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title"><h3>Instituciones</h3></div>
+                <div class="field">
+                    <label for="institutionName">Nombre de la institución</label>
+                    <input id="institutionName" type="text" placeholder="Ej. I.E. Santa Teresa">
+                </div>
+                <button class="primary" onclick="saveInstitution()">Agregar institución</button>
+                <div id="institutionsList" style="margin-top:18px;"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title"><h3>Grupos</h3></div>
+                <div class="field">
+                    <label for="groupName">Nombre del grupo</label>
+                    <input id="groupName" type="text" placeholder="Ej. 10°1">
+                </div>
+                <button class="primary" onclick="saveGroup()">Agregar grupo</button>
+                <div id="groupsList" style="margin-top:18px;"></div>
+            </div>
+
+        </section>
+
+
+        <!-- PERFIL -->
+
+        <section id="section-perfil" class="content-section">
+
+            <div class="topbar">
+
+                <div>
+                    <h2>Mi perfil</h2>
+                    <p style="color:#6b7280;">
+                        Configura tu información
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="field">
+
+                    <label>Nombre</label>
+
+                    <input id="profileName" type="text">
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>Correo</label>
+
+                    <input id="profileEmail" type="email" disabled>
+
+                </div>
+
+
+                <h3 style="margin:25px 0 12px;">
+                    Avatar
+                </h3>
+
+                <div id="avatarGrid" class="avatar-grid"></div>
+
+
+                <div style="margin-top:20px;">
+
+                    <button
+                        class="primary"
+                        onclick="saveProfile()"
+                    >
+                        Guardar perfil
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<div id="toast"></div>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+"https://czwznnkylpujwzmkjghs.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_1IOlszFnidbRouKFdRliIQ_Zr0-3N39";
+
+const supabaseClient =
+supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let currentUser = null;
+let currentProfile = null;
+
+let activities = [];
+let results = [];
+
+let currentActivity = null;
+
+let currentStudentActivity = null;
+let currentStudentQuestions = [];
+let currentStudentAnswers = [];
+
+let studentInfo = null;
+
+let currentStudentQuestionIndex = 0;
+
+let remainingSeconds = 0;
+
+let examDeadline = null;
+
+let timerInterval = null;
+
+let studentExits = 0;
+
+let examInProgress = false;
+
+let examSubmitting = false;
+
+let previewMode = false;
+
+let selectedAvatar = "👨‍🏫";
+
+let realtimeChannel = null;
+
+let institutions = [];
+let groups = [];
+let draftTimer = null;
+let draftDirty = false;
+let pendingDraftAction = null;
+
+const ACTIVITY_DRAFT_PREFIX = "eduquiz_activity_draft_v2";
+
+
+/* =========================================================
+   AVATARS
+========================================================= */
+
+const avatars = [
+    "👨‍🏫","👩‍🏫","🧑‍🏫",
+    "👨‍💻","👩‍💻","🧑‍💻",
+    "👨‍🎓","👩‍🎓","🧑‍🎓",
+    "🧑‍🔬","👨‍🔬","👩‍🔬",
+    "🧑‍🚀","👨‍🚀","👩‍🚀",
+    "🦊","🐼","🐯",
+    "🐨","🐸","🦁",
+    "🐵","🐱","🐶"
+];
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function toast(message){
+
+    const el =
+        document.getElementById("toast");
+
+    el.textContent = message;
+
+    el.style.display = "block";
+
+    clearTimeout(
+        toast.timer
+    );
+
+    toast.timer =
+        setTimeout(()=>{
+            el.style.display = "none";
+        },5000);
+}
+
+
+function generateId(){
+
+    return "act_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random()
+            .toString(36)
+            .substring(2,8);
+}
+
+function generateAnswerToken(){
+    const bytes = new Uint8Array(36);
+    crypto.getRandomValues(bytes);
+    return btoa(String.fromCharCode(...bytes))
+        .replace(/[+/=]/g,"")
+        .slice(0,48);
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+function normalizeArray(value){
+
+    if(Array.isArray(value)){
+        return value;
+    }
+
+    if(typeof value === "string"){
+
+        try{
+
+            const parsed =
+                JSON.parse(value);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+
+        }catch{
+            return [];
+        }
+
+    }
+
+    return [];
+}
+
+
+function normalizeQuestion(q){
+
+    q = q || {};
+
+    const type =
+        q.type ||
+        q.tipo ||
+        "abcd";
+
+    const question = {
+
+        type,
+
+        text:
+            q.text ??
+            q.pregunta ??
+            q.question ??
+            "",
+
+        options:
+            normalizeArray(
+                q.options ??
+                q.opciones
+            ),
+
+        points:
+            Number(
+                q.points ??
+                q.puntos ??
+                1
+            )
+
+    };
+
+    if(!Number.isFinite(question.points) ||
+       question.points <= 0){
+
+        question.points = 1;
+
+    }
+
+    if(type === "abcd"){
+
+        while(question.options.length < 4){
+            question.options.push("");
+        }
+
+        question.options =
+            question.options.slice(0,4);
+
+    }
+
+    return question;
+}
+
+
+/* =========================================================
+   AUTH UI
+========================================================= */
+
+function showLogin(){
+
+    document
+        .getElementById("loginForm")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("registerForm")
+        .classList.add("hidden");
+
+    document
+        .getElementById("resetPasswordForm")
+        .classList.add("hidden");
+}
+
+
+function showRegister(){
+
+    document
+        .getElementById("loginForm")
+        .classList.add("hidden");
+
+    document
+        .getElementById("registerForm")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("resetPasswordForm")
+        .classList.add("hidden");
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+async function register(){
+
+    const name =
+        document
+            .getElementById("registerName")
+            .value
+            .trim();
+
+    const email =
+        document
+            .getElementById("registerEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("registerPassword")
+            .value;
+
+    if(!name || !email || !password){
+
+        toast("Completa todos los campos.");
+
+        return;
+    }
+
+    if(password.length < 6){
+
+        toast("La contraseña debe tener mínimo 6 caracteres.");
+
+        return;
+    }
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.signUp({
+            email,
+            password,
+            options:{
+                data:{
+                    nombre:name
+                }
+            }
+        });
+
+    if(error){
+
+        toast(
+            "No se pudo crear la cuenta: " +
+            error.message
+        );
+
+        return;
+    }
+
+    if(data.user){
+
+        const {
+            error:profileError
+        } =
+            await supabaseClient
+                .from("profesores")
+                .upsert({
+                    id:data.user.id,
+                    nombre:name,
+                    correo:email,
+                    avatar:"👨‍🏫"
+                });
+
+        if(profileError){
+
+            console.error(
+                "Error creando perfil:",
+                profileError
+            );
+
+        }
+
+    }
+
+    toast(
+        "Cuenta creada correctamente."
+    );
+
+    showLogin();
+}
+
+
+async function login(){
+
+    const email =
+        document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value;
+
+    if(!email || !password){
+
+        toast(
+            "Escribe tu correo y contraseña."
+        );
+
+        return;
+    }
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if(error){
+
+        toast(
+            "No se pudo iniciar sesión: " +
+            error.message
+        );
+
+        return;
+    }
+
+    currentUser = data.user;
+
+    await initializeTeacher();
+
+}
+
+
+async function recoverPassword(){
+
+    if(location.protocol !== "http:" && location.protocol !== "https:"){
+        toast("Abre EduQuiz desde su dirección publicada para recuperar tu contraseña.");
+        return;
+    }
+
+    const email =
+        document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+    if(!email){
+
+        toast(
+            "Escribe primero tu correo."
+        );
+
+        return;
+    }
+
+    const {
+        error
+    } =
+        await supabaseClient.auth.resetPasswordForEmail(
+                email,
+                {
+                    redirectTo:
+                        window.location.href.split("#")[0]
+                }
+            );
+
+    if(error){
+
+        toast(
+            "No se pudo enviar el correo: " +
+            error.message
+        );
+
+        return;
+    }
+
+    toast(
+        "Revisa tu correo para recuperar la contraseña."
+    );
+}
+
+
+async function updateRecoveredPassword(){
+
+    const password =
+        document.getElementById("newPassword").value;
+
+    const confirmation =
+        document.getElementById("confirmNewPassword").value;
+
+    if(password.length < 6){
+        toast("La contraseña debe tener mínimo 6 caracteres.");
+        return;
+    }
+
+    if(password !== confirmation){
+        toast("Las contraseñas no coinciden.");
+        return;
+    }
+
+    const { error } =
+        await supabaseClient.auth.updateUser({ password });
+
+    if(error){
+        toast("No se pudo cambiar la contraseña: " + error.message);
+        return;
+    }
+
+    await supabaseClient.auth.signOut();
+    window.history.replaceState({}, document.title, window.location.href.split("#")[0]);
+    showLogin();
+    document.getElementById("loginPassword").value = "";
+    toast("Contraseña cambiada. Ya puedes iniciar sesión.");
+}
+
+
+async function logout(){
+
+    stopTimer();
+
+    await supabaseClient.auth.signOut();
+
+    currentUser = null;
+    currentProfile = null;
+
+    document
+        .getElementById("app")
+        .classList.add("hidden");
+
+    document
+        .getElementById("authScreen")
+        .classList.remove("hidden");
+}
+
+
+/* =========================================================
+   TEACHER INITIALIZATION
+========================================================= */
+
+async function initializeTeacher(){
+
+    document
+        .getElementById("authScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("studentScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("app")
+        .classList.remove("hidden");
+
+    await loadProfile();
+
+    await loadActivities();
+
+    await loadInstitutionsAndGroups();
+
+    await loadResults();
+
+    setupRealtime();
+
+    showSection("inicio");
+
+}
+
+
+async function loadProfile(){
+
+    if(!currentUser){
+        return;
+    }
+
+    let {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("profesores")
+            .select("*")
+            .eq("id",currentUser.id)
+            .maybeSingle();
+
+    if(error){
+
+        console.error(
+            "Error cargando perfil:",
+            error
+        );
+
+    }
+
+    if(!data){
+
+        const {
+            data:created
+        } =
+            await supabaseClient
+                .from("profesores")
+                .insert({
+                    id:currentUser.id,
+                    nombre:
+                        currentUser.user_metadata?.nombre ||
+                        currentUser.email?.split("@")[0] ||
+                        "Profesor",
+                    correo:currentUser.email,
+                    avatar:"👨‍🏫"
+                })
+                .select()
+                .single();
+
+        data = created;
+    }
+
+    currentProfile = data;
+
+    selectedAvatar =
+        data.avatar || "👨‍🏫";
+
+    document
+        .getElementById("sidebarName")
+        .textContent =
+            data.nombre;
+
+    document
+        .getElementById("sidebarEmail")
+        .textContent =
+            data.correo;
+
+    document
+        .getElementById("sidebarAvatar")
+        .textContent =
+            selectedAvatar;
+
+    document
+        .getElementById("profileName")
+        .value =
+            data.nombre;
+
+    document
+        .getElementById("profileEmail")
+        .value =
+            data.correo;
+
+    renderAvatars();
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function renderAvatars(){
+
+    const grid =
+        document
+            .getElementById("avatarGrid");
+
+    grid.innerHTML = "";
+
+    avatars.forEach(avatar=>{
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "avatar-option" +
+            (
+                selectedAvatar === avatar
+                ? " selected"
+                : ""
+            );
+
+        button.textContent = avatar;
+
+        button.onclick = ()=>{
+
+            selectedAvatar = avatar;
+
+            renderAvatars();
+
+        };
+
+        grid.appendChild(button);
+
+    });
+
+}
+
+
+async function saveProfile(){
+
+    if(!currentUser){
+        return;
+    }
+
+    const name =
+        document
+            .getElementById("profileName")
+            .value
+            .trim();
+
+    if(!name){
+
+        toast(
+            "Escribe tu nombre."
+        );
+
+        return;
+    }
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("profesores")
+            .update({
+                nombre:name,
+                avatar:selectedAvatar,
+                updated_at:new Date().toISOString()
+            })
+            .eq("id",currentUser.id)
+            .select()
+            .single();
+
+    if(error){
+
+        toast(
+            "No se pudo guardar el perfil: " +
+            error.message
+        );
+
+        return;
+    }
+
+    currentProfile = data;
+
+    document
+        .getElementById("sidebarName")
+        .textContent =
+            data.nombre;
+
+    document
+        .getElementById("sidebarAvatar")
+        .textContent =
+            data.avatar;
+
+    toast(
+        "Perfil guardado."
+    );
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+function showSection(section){
+
+    document
+        .querySelectorAll(".content-section")
+        .forEach(el=>{
+            el.classList.remove("active");
+        });
+
+    if(section === "editor"){
+
+        document
+            .getElementById("section-editor")
+            .classList.add("active");
+
+    }else{
+
+        const target =
+            document.getElementById(
+                "section-" + section
+            );
+
+        if(target){
+            target.classList.add("active");
+        }
+
+    }
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(btn=>{
+            btn.classList.remove("active");
+        });
+
+    const map = {
+        inicio:"navInicio",
+        actividades:"navActividades",
+        resultados:"navResultados",
+        instituciones:"navInstituciones",
+        perfil:"navPerfil"
+    };
+
+    if(map[section]){
+
+        document
+            .getElementById(map[section])
+            .classList.add("active");
+
+    }
+
+    if(section === "inicio"){
+        renderDashboard();
+    }
+
+    if(section === "actividades"){
+        renderActivities();
+    }
+
+    if(section === "resultados"){
+        renderResults();
+    }
+
+}
+
+
+/* =========================================================
+   ACTIVITIES
+========================================================= */
+
+async function loadActivities(){
+
+    if(!currentUser){
+        return;
+    }
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("actividades")
+            .select("*")
+            .eq("profesor_id",currentUser.id)
+            .order("created_at",{
+                ascending:false
+            });
+
+    if(error){
+
+        toast(
+            "Error cargando actividades: " +
+            error.message
+        );
+
+        return;
+    }
+
+    activities =
+        data || [];
+
+    renderActivities();
+
+    updateActivityFilter();
+
+}
+
+
+function getDraftKey(activityId){
+    const draftId = activityId ?? currentActivity?.draftId ?? currentActivity?.id ?? "__new__";
+    return `${ACTIVITY_DRAFT_PREFIX}:${currentUser?.id || "anon"}:${draftId}`;
+}
+
+function syncActivityFields(){
+    if(!currentActivity) return;
+
+    currentActivity.titulo = document.getElementById("activityTitle")?.value ?? currentActivity.titulo;
+    currentActivity.descripcion = document.getElementById("activityDescription")?.value ?? currentActivity.descripcion;
+    const mode = document.getElementById("activityTimeMode")?.value;
+    currentActivity.tiempo = mode === "limited"
+        ? (Number(document.getElementById("activityTime")?.value) || 10)
+        : 0;
+
+    const cards = document.querySelectorAll("#questionsEditor .question-box");
+    cards.forEach((card, index) => {
+        const question = currentActivity.preguntas[index];
+        const answer = currentActivity.answers[index];
+        if(!question || !answer) return;
+
+        const text = card.querySelector('[data-draft-field="question-text"]');
+        const points = card.querySelector('[data-draft-field="question-points"]');
+        const options = card.querySelectorAll('[data-draft-field="option"]');
+        const correct = card.querySelector('[data-draft-field="correct"]');
+        const expected = card.querySelector('[data-draft-field="expected"]');
+
+        if(text) question.text = text.value;
+        if(points) question.points = Number(points.value) || 1;
+        if(answer.points) answer.points = Number(points?.value) || 1;
+        options.forEach((option, optionIndex) => question.options[optionIndex] = option.value);
+        if(correct){
+            if(question.type === "vf") answer.correct = correct.value === "true";
+            else answer.correct = Number(correct.value) || 0;
+        }
+        if(expected) answer.expected = expected.value;
+    });
+}
+
+function getActivityDraftSnapshot(){
+    if(!currentActivity) return null;
+    syncActivityFields();
+    return { ...currentActivity, updatedAt: new Date().toISOString() };
+}
+
+function scheduleDraftSave(){
+    if(!currentActivity) return;
+    syncActivityFields();
+    draftDirty = true;
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveActivityDraft, 500);
+}
+
+function saveActivityDraft(){
+    if(!draftDirty || !currentActivity) return;
+    try{
+        const snapshot = getActivityDraftSnapshot();
+        localStorage.setItem(getDraftKey(snapshot.draftId || snapshot.id), JSON.stringify(snapshot));
+        draftDirty = false;
+        const status = document.getElementById("draftStatus");
+        if(status) status.textContent = "Borrador guardado automáticamente";
+    }catch(error){
+        console.warn("No se pudo guardar el borrador", error);
+    }
+}
+
+function clearActivityDraft(){
+    if(!currentActivity) return;
+    localStorage.removeItem(getDraftKey());
+    draftDirty = false;
+}
+
+function promptForDraft(activityId, action){
+    const key = getDraftKey(activityId);
+    let draft;
+    try{ draft = JSON.parse(localStorage.getItem(key) || "null"); }
+    catch{ draft = null; }
+
+    if(!draft || typeof draft !== "object"){
+        action();
+        return;
+    }
+
+    const date = new Date(draft.updatedAt || Date.now()).toLocaleString();
+    if(confirm(`Tienes un borrador sin guardar (${date}). Aceptar = continuarlo, Cancelar = descartarlo.`)){
+        pendingDraftAction = action;
+        continueDraft();
+    }else{
+        pendingDraftAction = action;
+        discardDraft();
+    }
+}
+
+function continueDraft(){
+    const action = pendingDraftAction;
+    const targetId = action?.activityId || "__new__";
+    let draft;
+    try{ draft = JSON.parse(localStorage.getItem(getDraftKey(targetId)) || "null"); }
+    catch{ draft = null; }
+
+    document.getElementById("draftPrompt").classList.add("hidden");
+    pendingDraftAction = null;
+    if(draft){
+        if(targetId !== "__new__"){
+            const activity = activities.find(item => item.id === targetId);
+            if(activity){
+                draft.activa = activity.activa;
+                draft.respuestas_modo = activity.respuestas_modo;
+                draft.respuestas_token = activity.respuestas_token;
+            }
+        }
+        currentActivity = draft;
+        document.getElementById("editorTitle").textContent = targetId === "__new__" ? "Crear actividad" : "Editar actividad";
+        renderEditor();
+        showSection("editor");
+        toast("Borrador recuperado.");
+    }
+}
+
+function discardDraft(){
+    const action = pendingDraftAction;
+    const targetId = action?.activityId || "__new__";
+    localStorage.removeItem(getDraftKey(targetId));
+    document.getElementById("draftPrompt").classList.add("hidden");
+    pendingDraftAction = null;
+    action?.();
+}
+
+
+async function loadInstitutionsAndGroups(){
+    if(!currentUser) return;
+
+    const [institutionsResult, groupsResult] = await Promise.all([
+        supabaseClient.from("instituciones").select("*").eq("profesor_id", currentUser.id).order("nombre"),
+        supabaseClient.from("grupos").select("*").eq("profesor_id", currentUser.id).order("nombre")
+    ]);
+
+    if(institutionsResult.error || groupsResult.error){
+        toast("Actualiza la base de datos de Supabase para habilitar instituciones y grupos.");
+        institutions = [];
+        groups = [];
+    }else{
+        institutions = institutionsResult.data || [];
+        groups = groupsResult.data || [];
+    }
+
+    renderInstitutionsAndGroups();
+}
+
+
+function renderInstitutionsAndGroups(){
+    const institutionContainer = document.getElementById("institutionsList");
+    const groupContainer = document.getElementById("groupsList");
+    const renderRow = (item, kind) => `
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;padding:10px;background:#f8fafc;border-radius:8px">
+            <strong style="flex:1">${escapeHtml(item.nombre)}</strong>
+            <button class="secondary" data-id="${escapeHtml(item.id)}" data-name="${escapeHtml(item.nombre)}" onclick="edit${kind === "institution" ? "Institution" : "Group"}(this.dataset.id,this.dataset.name)">Editar</button>
+            <button class="danger" onclick="delete${kind === "institution" ? "Institution" : "Group"}('${item.id}')">Eliminar</button>
+        </div>`;
+
+    institutionContainer.innerHTML = institutions.length
+        ? institutions.map(item => renderRow(item, "institution")).join("")
+        : "<p style='color:#6b7280'>Aún no has agregado instituciones.</p>";
+    groupContainer.innerHTML = groups.length
+        ? groups.map(item => renderRow(item, "group")).join("")
+        : "<p style='color:#6b7280'>Aún no has agregado grupos.</p>";
+}
+
+
+async function saveInstitution(){
+    await saveInstitutionGroup("institucion");
+}
+
+async function saveGroup(){
+    await saveInstitutionGroup("grupo");
+}
+
+async function saveInstitutionGroup(kind){
+    const isInstitution = kind === "institucion";
+    const input = document.getElementById(isInstitution ? "institutionName" : "groupName");
+    const nombre = input.value.trim();
+    if(!nombre){ toast(`Escribe el nombre del ${kind}.`); return; }
+
+    const table = isInstitution ? "instituciones" : "grupos";
+    const { error } = await supabaseClient.from(table).insert({ profesor_id: currentUser.id, nombre });
+    if(error){ toast(`No se pudo guardar: ${error.message}`); return; }
+
+    input.value = "";
+    await loadInstitutionsAndGroups();
+    toast(`${isInstitution ? "Institución" : "Grupo"} agregado.`);
+}
+
+async function editInstitution(id, oldName){
+    const nombre = prompt("Nuevo nombre de la institución", oldName);
+    if(nombre !== null) await updateInstitutionGroup("instituciones", id, nombre);
+}
+async function editGroup(id, oldName){
+    const nombre = prompt("Nuevo nombre del grupo", oldName);
+    if(nombre !== null) await updateInstitutionGroup("grupos", id, nombre);
+}
+async function updateInstitutionGroup(table, id, nombre){
+    nombre = nombre.trim();
+    if(!nombre){ toast("El nombre no puede estar vacío."); return; }
+    const { error } = await supabaseClient.from(table).update({ nombre }).eq("id", id).eq("profesor_id", currentUser.id);
+    if(error){ toast(`No se pudo actualizar: ${error.message}`); return; }
+    await loadInstitutionsAndGroups();
+    toast("Cambio guardado.");
+}
+async function deleteInstitution(id){ await deleteInstitutionGroup("instituciones", id, "institución"); }
+async function deleteGroup(id){ await deleteInstitutionGroup("grupos", id, "grupo"); }
+async function deleteInstitutionGroup(table, id, label){
+    if(!confirm(`¿Eliminar esta ${label}?`)) return;
+    const { error } = await supabaseClient.from(table).delete().eq("id", id).eq("profesor_id", currentUser.id);
+    if(error){ toast(`No se pudo eliminar: ${error.message}`); return; }
+    await loadInstitutionsAndGroups();
+    toast(`${label.charAt(0).toUpperCase()+label.slice(1)} eliminado.`);
+}
+
+
+function newActivity(){
+
+    const createActivity = () => {
+        currentActivity = {
+
+        id:generateId(),
+        draftId:"__new__",
+
+        titulo:"",
+
+        descripcion:"",
+
+        /* 10 = 10 minutos */
+        tiempo:10,
+
+        activa:true,
+
+        preguntas:[
+            {
+                type:"abcd",
+                text:"",
+                options:["","","",""],
+                points:1
+            }
+        ],
+
+        answers:[
+            {
+                type:"abcd",
+                correct:0,
+                points:1
+            }
+        ]
+
+    };
+
+    document
+    .getElementById("editorTitle")
+    .textContent =
+        "Crear actividad";
+
+    renderEditor();
+
+    showSection("editor");
+    };
+
+    createActivity.activityId = "__new__";
+    promptForDraft("__new__", createActivity);
+}
+
+
+
+function editActivity(id){
+
+    const activity =
+        activities.find(
+            a => a.id === id
+        );
+
+    if(!activity){
+        return;
+    }
+
+    const openEditor = () => {
+    const questions =
+        normalizeArray(
+            activity.preguntas_publicas
+        ).map(normalizeQuestion);
+
+    const answers =
+        normalizeArray(
+            activity.respuestas_privadas
+        );
+
+    currentActivity = {
+
+        id:activity.id,
+        draftId:activity.id,
+
+        titulo:activity.titulo,
+
+        descripcion:activity.descripcion,
+
+        /*
+         * 0 significa tiempo ilimitado.
+         * Cualquier número mayor a 0 significa minutos.
+         */
+        tiempo:
+            Number(activity.tiempo) >= 0
+                ? Number(activity.tiempo)
+                : 10,
+
+        activa:
+            activity.activa,
+
+        respuestas_modo:
+            ["al_cerrar","manual"].includes(activity.respuestas_modo)
+                ? activity.respuestas_modo
+                : "desactivado",
+        respuestas_token: activity.respuestas_token,
+
+        preguntas:questions,
+
+        answers:answers
+
+    };
+
+    document
+        .getElementById("editorTitle")
+        .textContent =
+            "Editar actividad";
+
+    renderEditor();
+
+    showSection("editor");
+    };
+
+    openEditor.activityId = id;
+    promptForDraft(id, openEditor);
+
+
+}
+
+
+/* =========================================================
+   TIME MODE
+========================================================= */
+
+function changeActivityTimeMode(){
+
+    const mode =
+        document
+            .getElementById("activityTimeMode")
+            .value;
+
+    const input =
+        document
+            .getElementById("activityTime");
+
+    const box =
+        document
+            .getElementById("specificTimeBox");
+
+    const help =
+        document
+            .getElementById("timeHelp");
+
+
+    if(mode === "unlimited"){
+
+        input.disabled = true;
+
+        box.style.opacity = "0.55";
+
+        help.textContent =
+            "El estudiante podrá realizar la actividad sin límite de tiempo.";
+
+    }else{
+
+        input.disabled = false;
+
+        box.style.opacity = "1";
+
+        help.textContent =
+            "El estudiante tendrá un tiempo máximo para completar la actividad.";
+
+        if(
+            !Number.isFinite(Number(input.value)) ||
+            Number(input.value) < 1
+        ){
+
+            input.value = 10;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER EDITOR
+========================================================= */
+
+function renderEditor(){
+
+    if(!currentActivity){
+        return;
+    }
+
+    document
+        .getElementById("activityTitle")
+        .value =
+            currentActivity.titulo || "";
+
+    document
+        .getElementById("activityDescription")
+        .value =
+            currentActivity.descripcion || "";
+
+
+    const time =
+        Number(currentActivity.tiempo);
+
+
+    const modeSelect =
+        document
+            .getElementById("activityTimeMode");
+
+    const timeInput =
+        document
+            .getElementById("activityTime");
+
+
+    if(
+        Number.isFinite(time) &&
+        time === 0
+    ){
+
+        modeSelect.value =
+            "unlimited";
+
+        timeInput.value =
+            10;
+
+    }else{
+
+        modeSelect.value =
+            "limited";
+
+        timeInput.value =
+            Number.isFinite(time) && time >= 1
+                ? time
+                : 10;
+
+    }
+
+
+    changeActivityTimeMode();
+
+    renderQuestionEditor();
+
+}
+
+
+function renderQuestionEditor(){
+
+    const container =
+        document
+            .getElementById("questionsEditor");
+
+    container.innerHTML = "";
+
+    currentActivity.preguntas.forEach(
+        (question,index)=>{
+
+            const answer =
+                currentActivity.answers[index] ||
+                {
+                    type:question.type,
+                    correct:0,
+                    expected:"",
+                    points:question.points
+                };
+
+            let html = `
+
+                <div class="question-box">
+
+                    <div class="question-head">
+
+                        <strong>
+                            Pregunta ${index + 1}
+                        </strong>
+
+                        <button
+                            class="danger"
+                            onclick="removeQuestion(${index})"
+                        >
+                            Eliminar
+                        </button>
+
+                    </div>
+
+                    <div class="question-controls">
+
+                        <select
+                            onchange="changeQuestionType(${index},this.value)"
+                        >
+
+                            <option value="abcd"
+                                ${question.type==="abcd" ? "selected":""}>
+                                ABCD
+                            </option>
+
+                            <option value="vf"
+                                ${question.type==="vf" ? "selected":""}>
+                                Verdadero / Falso
+                            </option>
+
+                            <option value="abierta"
+                                ${question.type==="abierta" ? "selected":""}>
+                                Respuesta abierta
+                            </option>
+
+                        </select>
+
+                        <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value="${question.points || 1}"
+                            onchange="changeQuestionPoints(${index},this.value)"
+                                            data-draft-field="question-points"
+                                            placeholder="Puntos"
+                        >
+
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            color:#6b7280;
+                            font-size:13px;
+                        ">
+                            puntos
+                        </div>
+
+                    </div>
+
+                    <div class="field" style="margin-top:12px;">
+
+                        <label>Pregunta</label>
+
+                        <textarea
+                            rows="2"
+                            onchange="changeQuestionText(${index},this.value)"
+                            data-draft-field="question-text"
+                            placeholder="Escribe la pregunta..."
+                        >${escapeHtml(question.text)}</textarea>
+
+                    </div>
+
+            `;
+
+
+            if(question.type === "abcd"){
+
+                html += `
+
+                    <div class="options-grid">
+
+                        ${[0,1,2,3].map(i=>`
+
+                            <input
+                                value="${escapeHtml(question.options[i] || "")}"
+                                placeholder="Opción ${String.fromCharCode(65+i)}"
+                                onchange="changeOption(${index},${i},this.value)"
+                                data-draft-field="option"
+                            >
+
+                        `).join("")}
+
+                    </div>
+
+                    <div class="correct-row">
+
+                        <label>
+                            Respuesta correcta:
+                        </label>
+
+                        <select
+                            onchange="changeCorrectAnswer(${index},this.value)"
+                            data-draft-field="correct"
+                        >
+
+                            ${[0,1,2,3].map(i=>`
+
+                                <option
+                                    value="${i}"
+                                    ${Number(answer.correct)===i ? "selected":""}
+                                >
+                                    ${String.fromCharCode(65+i)}
+                                </option>
+
+                            `).join("")}
+
+                        </select>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            if(question.type === "vf"){
+
+                html += `
+
+                    <div class="correct-row">
+
+                        <label>
+                            Respuesta correcta:
+                        </label>
+
+                        <select
+                            onchange="changeCorrectAnswer(${index},this.value)"
+                            data-draft-field="correct"
+                        >
+
+                            <option
+                                value="true"
+                                ${String(answer.correct)==="true" ? "selected":""}
+                            >
+                                Verdadero
+                            </option>
+
+                            <option
+                                value="false"
+                                ${String(answer.correct)==="false" ? "selected":""}
+                            >
+                                Falso
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            if(question.type === "abierta"){
+
+                html += `
+
+                    <div class="field" style="margin-top:12px;">
+
+                        <label>
+                            Respuesta esperada
+                        </label>
+
+                        <input
+                            value="${escapeHtml(answer.expected || "")}"
+                            onchange="changeExpectedAnswer(${index},this.value)"
+                            data-draft-field="expected"
+                            placeholder="Respuesta correcta esperada"
+                        >
+
+                    </div>
+
+                    <small style="color:#6b7280;">
+                        La respuesta abierta se comparará ignorando
+                        mayúsculas, minúsculas y espacios repetidos.
+                    </small>
+
+                `;
+
+            }
+
+
+            html += `</div>`;
+
+            container.insertAdjacentHTML(
+                "beforeend",
+                html
+            );
+
+        }
+    );
+
+}
+
+
+function addQuestion(){
+
+    if(!currentActivity){
+        return;
+    }
+
+    currentActivity.preguntas.push({
+
+        type:"abcd",
+
+        text:"",
+
+        options:["","","",""],
+
+        points:1
+
+    });
+
+    currentActivity.answers.push({
+
+        type:"abcd",
+
+        correct:0,
+
+        points:1
+
+    });
+
+    renderQuestionEditor();
+    scheduleDraftSave();
+
+}
+
+
+function removeQuestion(index){
+
+    if(
+        currentActivity.preguntas.length <= 1
+    ){
+
+        toast(
+            "La actividad debe tener al menos una pregunta."
+        );
+
+        return;
+    }
+
+    currentActivity.preguntas.splice(
+        index,
+        1
+    );
+
+    currentActivity.answers.splice(
+        index,
+        1
+    );
+
+    renderQuestionEditor();
+    scheduleDraftSave();
+
+}
+
+
+function changeQuestionType(index,type){
+
+    currentActivity.preguntas[index].type =
+        type;
+
+    if(type === "abcd"){
+
+        currentActivity.preguntas[index].options =
+            ["","","",""];
+
+        currentActivity.answers[index] = {
+
+            type:"abcd",
+
+            correct:0,
+
+            points:
+                currentActivity.preguntas[index].points || 1
+
+        };
+
+    }
+
+    if(type === "vf"){
+
+        currentActivity.answers[index] = {
+
+            type:"vf",
+
+            correct:true,
+
+            points:
+                currentActivity.preguntas[index].points || 1
+
+        };
+
+    }
+
+    if(type === "abierta"){
+
+        currentActivity.answers[index] = {
+
+            type:"abierta",
+
+            expected:"",
+
+            points:
+                currentActivity.preguntas[index].points || 1
+
+        };
+
+    }
+
+    renderQuestionEditor();
+
+}
+
+
+function changeQuestionPoints(index,value){
+
+    let points =
+        Number(value);
+
+    if(!Number.isFinite(points) ||
+       points <= 0){
+
+        points = 1;
+
+    }
+
+    currentActivity.preguntas[index].points =
+        points;
+
+    if(!currentActivity.answers[index]){
+        currentActivity.answers[index] = {};
+    }
+
+    currentActivity.answers[index].points =
+        points;
+
+}
+
+
+function changeQuestionText(index,value){
+
+    currentActivity.preguntas[index].text =
+        value;
+
+}
+
+
+function changeOption(index,option,value){
+
+    currentActivity
+        .preguntas[index]
+        .options[option] =
+            value;
+
+}
+
+
+function changeCorrectAnswer(index,value){
+
+    const type =
+        currentActivity
+            .preguntas[index]
+            .type;
+
+    if(type === "abcd"){
+
+        currentActivity
+            .answers[index]
+            .correct =
+                Number(value);
+
+    }
+
+    if(type === "vf"){
+
+        currentActivity
+            .answers[index]
+            .correct =
+                value === "true";
+
+    }
+
+}
+
+
+function changeExpectedAnswer(index,value){
+
+    currentActivity
+        .answers[index]
+        .expected =
+            value;
+
+}
+
+
+/* =========================================================
+   SAVE ACTIVITY
+========================================================= */
+
+async function saveActivity(){
+
+    if(!currentUser ||
+       !currentActivity){
+
+        return;
+    }
+
+    const title =
+        document
+            .getElementById("activityTitle")
+            .value
+            .trim();
+
+    const description =
+        document
+            .getElementById("activityDescription")
+            .value
+            .trim();
+
+
+    /* ==========================================
+       TIEMPO
+       0 = ilimitado
+    ========================================== */
+
+    const mode =
+        document
+            .getElementById("activityTimeMode")
+            .value;
+
+
+    let time = 0;
+
+
+    if(mode === "limited"){
+
+        time =
+            Number(
+                document
+                    .getElementById("activityTime")
+                    .value
+            );
+
+
+        if(!Number.isFinite(time) ||
+           time < 1){
+
+            toast(
+                "El tiempo debe ser de mínimo 1 minuto."
+            );
+
+            return;
+        }
+
+    }else{
+
+        time = 0;
+
+    }
+
+
+    if(!title){
+
+        toast(
+            "Escribe un título."
+        );
+
+        return;
+    }
+
+
+    if(!currentActivity.preguntas.length){
+
+        toast(
+            "Agrega al menos una pregunta."
+        );
+
+        return;
+    }
+
+
+    for(let i=0;i<currentActivity.preguntas.length;i++){
+
+        const q =
+            currentActivity.preguntas[i];
+
+        if(!q.text.trim()){
+
+            toast(
+                "Completa la pregunta " +
+                (i+1) +
+                "."
+            );
+
+            return;
+        }
+
+        if(q.type === "abcd"){
+
+            if(q.options.length !== 4 ||
+               q.options.some(
+                   option =>
+                   !String(option).trim()
+               )){
+
+                toast(
+                    "Completa todas las opciones de la pregunta " +
+                    (i+1) +
+                    "."
+                );
+
+                return;
+            }
+
+        }
+
+        if(q.type === "abierta"){
+
+            if(
+                !String(
+                    currentActivity
+                        .answers[i]
+                        ?.expected || ""
+                ).trim()
+            ){
+
+                toast(
+                    "Escribe la respuesta esperada de la pregunta " +
+                    (i+1) +
+                    "."
+                );
+
+                return;
+            }
+
+        }
+
+    }
+
+
+    currentActivity.titulo =
+        title;
+
+    currentActivity.descripcion =
+        description;
+
+    currentActivity.tiempo =
+        time;
+
+
+    const publicQuestions =
+        currentActivity.preguntas.map(
+            q => {
+
+                const copy = {
+                    type:q.type,
+                    text:q.text,
+                    points:Number(q.points) || 1
+                };
+
+                if(q.type === "abcd"){
+                    copy.options =
+                        q.options.slice(0,4);
+                }
+
+                return copy;
+
+            }
+        );
+
+
+    const privateAnswers =
+        currentActivity.answers.map(
+            (a,index)=>{
+
+                const q =
+                    currentActivity
+                        .preguntas[index];
+
+                const answer = {
+                    type:q.type,
+                    points:Number(q.points) || 1
+                };
+
+                if(q.type === "abcd"){
+
+                    answer.correct =
+                        Number(a.correct) || 0;
+
+                }
+
+                if(q.type === "vf"){
+
+                    answer.correct =
+                        Boolean(a.correct);
+
+                }
+
+                if(q.type === "abierta"){
+
+                    answer.expected =
+                        String(
+                            a.expected || ""
+                        ).trim();
+
+                }
+
+                return answer;
+
+            }
+        );
+
+
+    const payload = {
+
+        id:currentActivity.id,
+
+        profesor_id:currentUser.id,
+
+        titulo:title,
+
+        descripcion:description,
+
+        /*
+         * 0 = tiempo ilimitado
+         * >0 = minutos
+         */
+        tiempo:time,
+
+        preguntas_publicas:
+            publicQuestions,
+
+        respuestas_privadas:
+            privateAnswers,
+
+        activa:
+            currentActivity.activa !== false,
+
+        respuestas_modo:
+            ["al_cerrar","manual"].includes(currentActivity.respuestas_modo)
+                ? currentActivity.respuestas_modo
+                : "desactivado",
+        respuestas_token:
+            currentActivity.respuestas_token || generateAnswerToken(),
+
+        updated_at:
+            new Date().toISOString()
+
+    };
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("actividades")
+            .upsert(
+                payload,
+                {
+                    onConflict:"id"
+                }
+            )
+            .select()
+            .single();
+
+
+    if(error){
+
+        console.error(
+            "ERROR GUARDANDO ACTIVIDAD:",
+            error
+        );
+
+        toast(
+            "No se pudo guardar la actividad: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    clearActivityDraft();
+    currentActivity = data;
+
+    await loadActivities();
+
+    toast(
+        time === 0
+            ? "Actividad guardada sin límite de tiempo."
+            : "Actividad guardada correctamente."
+    );
+
+    showSection("actividades");
+
+}
+
+
+/* =========================================================
+   RENDER ACTIVITIES
+========================================================= */
+
+function renderActivities(){
+
+    const grid =
+        document
+            .getElementById("activitiesGrid");
+
+    if(!grid){
+        return;
+    }
+
+    if(!activities.length){
+
+        grid.innerHTML = `
+
+            <div class="panel">
+
+                <h3>No tienes actividades todavía.</h3>
+
+                <p style="color:#6b7280;margin-top:8px;">
+                    Crea tu primera actividad para comenzar.
+                </p>
+
+                <button
+                    class="primary"
+                    style="margin-top:15px;"
+                    onclick="newActivity()"
+                >
+                    Crear actividad
+                </button>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML =
+        activities.map(
+            activity => {
+
+                const questions =
+                    normalizeArray(
+                        activity.preguntas_publicas
+                    );
+
+                const activityTime =
+                    Number(activity.tiempo) || 0;
+
+                const timeText =
+                    activityTime > 0
+                        ? `${activityTime} min`
+                        : "Sin límite";
+
+
+                return `
+
+                    <div class="activity-card">
+
+                        <h3>
+                            ${escapeHtml(activity.titulo)}
+                        </h3>
+
+                        <p>
+                            ${escapeHtml(activity.descripcion || "Sin descripción")}
+                        </p>
+
+                        <div class="activity-meta">
+
+                            <span class="badge">
+                                ${questions.length} preguntas
+                            </span>
+
+                            <span class="badge">
+                                ${timeText}
+                            </span>
+
+                            <span class="badge ${
+                                activity.activa
+                                    ? ""
+                                    : "closed"
+                            }">
+
+                                ${
+                                    activity.activa
+                                        ? "Activa"
+                                        : "Cerrada"
+                                }
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="activity-actions">
+
+                            <div class="activity-action-group">
+                                <strong>Actividad</strong>
+                                <div class="activity-action-buttons">
+
+                            <button
+                                class="secondary"
+                                onclick="previewActivity('${activity.id}')"
+                            >
+                                Ver prueba
+                            </button>
+
+                            <button
+                                class="secondary"
+                                onclick="shareActivity('${activity.id}')"
+                            >
+                                Compartir
+                            </button>
+
+                                </div>
+                            </div>
+
+                            <div class="activity-action-group">
+                                <strong>Administrar</strong>
+                                <div class="activity-action-buttons">
+
+                            <button
+                                class="secondary"
+                                onclick="duplicateActivity('${activity.id}')"
+                            >
+                                Duplicar
+                            </button>
+
+                            <button
+                                class="secondary"
+                                data-activity-id="${escapeHtml(activity.id)}"
+                                onclick="editActivity(this.dataset.activityId)"
+                            >
+                                Editar
+                            </button>
+
+                            <button
+                                class="secondary"
+                                onclick="toggleActivity('${activity.id}')"
+                            >
+                                ${
+                                    activity.activa
+                                        ? "Cerrar"
+                                        : "Abrir"
+                                }
+                            </button>
+
+                            <button
+                                class="danger"
+                                onclick="deleteActivity('${activity.id}')"
+                            >
+                                Eliminar
+                            </button>
+
+                                </div>
+                            </div>
+
+                            <div class="activity-action-group">
+                                <strong>Enlace de respuestas</strong>
+                                <div class="activity-action-buttons">
+
+                            <select
+                                aria-label="Modo de respuestas"
+                                data-answer-mode-id="${escapeHtml(activity.id)}"
+                                onchange="changeAnswerKeyMode(this.dataset.answerModeId,this.value)"
+                            >
+                                <option value="desactivado" ${activity.respuestas_modo === "desactivado" ? "selected" : ""}>Respuestas desactivadas</option>
+                                <option value="al_cerrar" ${activity.respuestas_modo === "al_cerrar" ? "selected" : ""}>Al cerrar actividad</option>
+                                <option value="manual" ${activity.respuestas_modo === "manual" ? "selected" : ""}>Manual</option>
+                            </select>
+
+                            <button
+                                class="secondary"
+                                onclick="copyAnswerKeyLink('${activity.id}')"
+                            >
+                                Copiar respuestas
+                            </button>
+
+                            <button
+                                class="secondary"
+                                data-activity-id="${escapeHtml(activity.id)}"
+                                onclick="regenerateAnswerLink(this.dataset.activityId)"
+                            >
+                                Regenerar enlace
+                            </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* =========================================================
+   DUPLICATE
+========================================================= */
+
+async function duplicateActivity(id){
+    const source = activities.find(activity => activity.id === id);
+    if(!source) return;
+
+    const clone = {
+        id: generateId(),
+        profesor_id: currentUser.id,
+        titulo: `${source.titulo} (copia)`,
+        descripcion: source.descripcion || "",
+        tiempo: Number(source.tiempo) || 0,
+        activa: false,
+        respuestas_modo: "desactivado",
+        respuestas_token: generateAnswerToken(),
+        preguntas_publicas: JSON.parse(JSON.stringify(normalizeArray(source.preguntas_publicas))),
+        respuestas_privadas: JSON.parse(JSON.stringify(normalizeArray(source.respuestas_privadas))),
+        updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabaseClient
+        .from("actividades")
+        .insert(clone);
+
+    if(error){ toast("No se pudo duplicar la actividad: " + error.message); return; }
+
+    await loadActivities();
+    toast("Copia creada con identificador y resultados independientes.");
+}
+
+
+/* =========================================================
+   TOGGLE / DELETE
+========================================================= */
+
+async function toggleActivity(id){
+
+    const activity =
+        activities.find(
+            a => a.id === id
+        );
+
+    if(!activity){
+        return;
+    }
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("actividades")
+            .update({
+                activa:!activity.activa,
+                updated_at:
+                    new Date().toISOString()
+            })
+            .eq("id",id)
+            .eq("profesor_id",currentUser.id);
+
+    if(error){
+
+        toast(
+            "No se pudo cambiar el estado: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadActivities();
+
+    toast(
+        activity.activa
+            ? "Actividad cerrada."
+            : "Actividad abierta."
+    );
+
+}
+
+
+async function deleteActivity(id){
+
+    if(!confirm(
+        "¿Eliminar esta actividad y sus resultados?"
+    )){
+        return;
+    }
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("actividades")
+            .delete()
+            .eq("id",id)
+            .eq("profesor_id",currentUser.id);
+
+    if(error){
+
+        toast(
+            "No se pudo eliminar: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadActivities();
+
+    await loadResults();
+
+    toast(
+        "Actividad eliminada."
+    );
+
+}
+
+
+/* =========================================================
+   SHARE
+========================================================= */
+
+function shareActivity(id){
+
+    const url =
+        window.location.href.split("#")[0] +
+        "#actividad=" +
+        encodeURIComponent(id);
+
+    if(navigator.clipboard){
+
+        navigator.clipboard
+            .writeText(url)
+            .then(()=>{
+                toast(
+                    "Enlace copiado correctamente."
+                );
+            })
+            .catch(()=>{
+                prompt(
+                    "Copia este enlace:",
+                    url
+                );
+            });
+
+    }else{
+
+        prompt(
+            "Copia este enlace:",
+            url
+        );
+
+    }
+
+}
+
+
+async function changeAnswerKeyMode(id, mode){
+    if(!["desactivado","al_cerrar","manual"].includes(mode)) return;
+    const activity = activities.find(item => item.id === id);
+    if(!activity) return;
+
+    if(mode === "manual" && !confirm("Cualquier persona con el enlace verá las respuestas correctas, incluso con la actividad abierta. ¿Continuar?")){
+        const currentMode = ["al_cerrar","manual"].includes(activity.respuestas_modo)
+            ? activity.respuestas_modo
+            : "desactivado";
+        document.querySelectorAll("[data-answer-mode-id]").forEach(select => {
+            if(select.dataset.answerModeId === id) select.value = currentMode;
+        });
+        return;
+    }
+
+    const update = {
+        respuestas_modo: mode,
+        respuestas_token: activity.respuestas_token || generateAnswerToken(),
+        updated_at: new Date().toISOString()
+    };
+    const { error } = await supabaseClient
+        .from("actividades")
+        .update(update)
+        .eq("id", id)
+        .eq("profesor_id", currentUser.id);
+    if(error){ toast("No se pudo configurar el enlace: " + error.message); await loadActivities(); return; }
+    await loadActivities();
+    toast(mode === "desactivado" ? "Respuestas desactivadas." : "Modo de respuestas actualizado.");
+}
+
+async function regenerateAnswerLink(id){
+    const activity = activities.find(item => item.id === id);
+    if(!activity) return;
+    if(!confirm("El enlace actual dejará de funcionar. ¿Quieres regenerarlo?")) return;
+
+    const { error } = await supabaseClient
+        .from("actividades")
+        .update({
+            respuestas_token: generateAnswerToken(),
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .eq("profesor_id", currentUser.id);
+
+    if(error){
+        toast("No se pudo regenerar el enlace: " + error.message);
+        return;
+    }
+
+    await loadActivities();
+    toast("Enlace de respuestas regenerado.");
+}
+
+function answerKeyUrl(activity){
+    if(!activity?.respuestas_token) return "";
+    return window.location.href.split("#")[0] + "#respuestas=" + encodeURIComponent(activity.respuestas_token);
+}
+
+async function copyAnswerKeyLink(id){
+    const activity = activities.find(item => item.id === id);
+    const url = answerKeyUrl(activity);
+    if(!url){ toast("El enlace aún no tiene token."); return; }
+    try{
+        await navigator.clipboard.writeText(url);
+        toast("Enlace de respuestas copiado.");
+    }catch{
+        window.prompt("Copia este enlace:", url);
+    }
+}
+
+async function loadAnswerKey(token){
+    showStudentInterface();
+    document.getElementById("studentStartCard").classList.add("hidden");
+    document.getElementById("studentExam").classList.add("hidden");
+    document.getElementById("studentResult").classList.add("hidden");
+
+    const { data, error } = await supabaseClient.rpc("obtener_clave_respuestas", { p_respuestas_token: token });
+    if(error){
+        showStudentError("Respuestas no disponibles", error.message);
+        return;
+    }
+
+    const key = Array.isArray(data) ? data[0] : data;
+    if(!key){
+        showStudentError("Respuestas no disponibles", "El enlace no está habilitado o ya no es válido.");
+        return;
+    }
+    const questions = normalizeArray(key?.preguntas).map(normalizeQuestion);
+    const answers = normalizeArray(key?.respuestas);
+    const html = questions.map((question, index) => {
+        const answer = answers[index] || {};
+        let correct = "";
+        if(question.type === "abcd"){
+            correct = `<div><strong>Respuesta correcta:</strong> ${escapeHtml(question.options[Number(answer.correct) || 0] || "Sin configurar")}</div>`;
+            correct += `<div style="margin-top:8px">${question.options.map((option, i) => `${i === (Number(answer.correct) || 0) ? "✅" : "◻️"} ${String.fromCharCode(65+i)}. ${escapeHtml(option)}`).join("<br>")}</div>`;
+        }else if(question.type === "vf"){
+            correct = `<div><strong>Respuesta correcta:</strong> ${answer.correct ? "Verdadero" : "Falso"}</div>`;
+        }else{
+            correct = `<div><strong>Respuesta modelo:</strong> ${escapeHtml(answer.expected || "Sin configurar")}</div>`;
+        }
+        return `<div class="student-card" style="margin:14px 0"><h3>${index+1}. ${escapeHtml(question.text)}</h3><div style="margin-top:12px;line-height:1.7">${correct}</div></div>`;
+    }).join("");
+
+    const exam = document.getElementById("studentExam");
+    exam.innerHTML = `
+      <div class="exam-top"><div><strong>Clave de respuestas</strong></div><button class="secondary" onclick="window.print()">Imprimir / Guardar PDF</button></div>
+      <div class="student-card"><h2>${escapeHtml(key.titulo)}</h2><p style="color:#64748b;margin-top:8px">${escapeHtml(key.descripcion || "")}</p></div>${html}`;
+    exam.classList.remove("hidden");
+    document.getElementById("studentTitle").textContent = key.titulo;
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+async function previewActivity(id){
+
+    const activity =
+        activities.find(
+            a => a.id === id
+        );
+
+    if(!activity){
+        return;
+    }
+
+    currentStudentActivity = {
+
+        id:activity.id,
+
+        title:activity.titulo,
+
+        description:activity.descripcion,
+
+        time:Number(activity.tiempo) || 0
+
+    };
+
+    currentStudentQuestions =
+        normalizeArray(
+            activity.preguntas_publicas
+        ).map(normalizeQuestion);
+
+    previewMode = true;
+
+    studentInfo = {
+        name:"Vista previa",
+        group:"Vista previa",
+        type:"Otra",
+        institution:"Vista previa"
+    };
+
+    studentExits = 0;
+
+    currentStudentAnswers =
+        new Array(
+            currentStudentQuestions.length
+        ).fill(null);
+
+    currentStudentQuestionIndex = 0;
+
+    remainingSeconds =
+        Number(currentStudentActivity.time) * 60;
+
+    examDeadline =
+        remainingSeconds > 0
+            ? Date.now() + remainingSeconds * 1000
+            : null;
+
+    examInProgress = true;
+
+    examSubmitting = false;
+
+    showStudentInterface();
+
+    document
+        .getElementById("studentTitle")
+        .textContent =
+            currentStudentActivity.title;
+
+    document
+        .getElementById("studentDescription")
+        .textContent =
+            currentStudentActivity.description;
+
+    document
+        .getElementById("studentStartCard")
+        .classList.add("hidden");
+
+    document
+        .getElementById("studentResult")
+        .classList.add("hidden");
+
+    document
+        .getElementById("studentExam")
+        .classList.remove("hidden");
+
+    renderStudentExam();
+
+    if(remainingSeconds > 0){
+        startTimer();
+    }else{
+        updateTimerDisplay();
+    }
+
+}
+
+
+/* =========================================================
+   STUDENT PUBLIC ACTIVITY
+========================================================= */
+
+async function loadPublicActivity(id){
+
+    document
+        .getElementById("authScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("app")
+        .classList.add("hidden");
+
+    document
+        .getElementById("studentScreen")
+        .classList.remove("hidden");
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .rpc(
+                "obtener_actividad_publica",
+                {
+                    p_actividad_id:id
+                }
+            );
+
+
+    if(error){
+
+        showStudentError(
+            "No se pudo cargar la actividad.",
+            error.message
+        );
+
+        return;
+    }
+
+
+    let activityData = data;
+
+
+    if(Array.isArray(activityData)){
+
+        if(activityData.length === 0){
+
+            showStudentError(
+                "Actividad no encontrada.",
+                "La actividad no existe o está cerrada."
+            );
+
+            return;
+        }
+
+        activityData =
+            activityData[0];
+
+    }
+
+
+    if(!activityData){
+
+        showStudentError(
+            "Actividad no encontrada.",
+            "Supabase no devolvió información."
+        );
+
+        return;
+    }
+
+
+    let publicQuestions =
+        activityData.preguntas_publicas;
+
+
+    publicQuestions =
+        normalizeArray(
+            publicQuestions
+        ).map(
+            normalizeQuestion
+        );
+
+
+    if(!publicQuestions.length){
+
+        publicQuestions =
+            normalizeArray(
+                activityData.questionsPublic ||
+                activityData.preguntas ||
+                activityData.questions
+            ).map(
+                normalizeQuestion
+            );
+
+    }
+
+
+    if(!publicQuestions.length){
+
+        showStudentError(
+            "Esta actividad no tiene preguntas disponibles.",
+            "La actividad existe, pero Supabase no está devolviendo preguntas públicas."
+        );
+
+        return;
+    }
+
+
+    currentStudentActivity = {
+
+        id:
+            activityData.id ||
+            id,
+
+        title:
+            activityData.titulo ||
+            activityData.title ||
+            "Actividad",
+
+        description:
+            activityData.descripcion ||
+            activityData.description ||
+            "",
+
+        /*
+         * 0 = sin límite
+         */
+        time:
+            Number(
+                activityData.tiempo ??
+                activityData.time ??
+                0
+            )
+
+    };
+
+
+    currentStudentQuestions =
+        publicQuestions;
+
+
+    document
+        .getElementById("studentTitle")
+        .textContent =
+            currentStudentActivity.title;
+
+
+    document
+        .getElementById("studentDescription")
+        .textContent =
+            currentStudentActivity.description;
+
+
+    await loadPublicFormOptions(id);
+
+    document
+        .getElementById("studentStartCard")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("studentExam")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("studentResult")
+        .classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   STUDENT ERROR
+========================================================= */
+
+function showStudentError(title,message){
+
+    document
+        .getElementById("studentScreen")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("studentStartCard")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("studentStartCard")
+        .innerHTML = `
+
+            <div style="text-align:center;padding:25px;">
+
+                <h2 style="color:#dc2626;">
+                    ${escapeHtml(title)}
+                </h2>
+
+                <p style="
+                    color:#6b7280;
+                    margin-top:10px;
+                    line-height:1.5;
+                ">
+                    ${escapeHtml(message)}
+                </p>
+
+            </div>
+
+        `;
+
+}
+
+
+/* =========================================================
+   STUDENT INSTITUTION
+========================================================= */
+
+async function loadPublicFormOptions(activityId){
+    const { data, error } = await supabaseClient.rpc("obtener_opciones_estudiante", { p_actividad_id: activityId });
+    const options = error ? null : (Array.isArray(data) ? data[0] : data);
+    const configuredGroups = normalizeArray(options?.grupos);
+    const configuredInstitutions = normalizeArray(options?.instituciones);
+    const groupSelect = document.getElementById("studentGroup");
+
+    if(configuredGroups.length){
+        groupSelect.innerHTML = '<option value="">Selecciona un grupo</option>' + configuredGroups
+            .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+    }else if(groupSelect.tagName !== "INPUT"){
+        groupSelect.outerHTML = '<input id="studentGroup" type="text" placeholder="Ej. 10°1">';
+    }
+
+    const institutionSelect = document.getElementById("studentInstitutionType");
+    if(configuredInstitutions.length){
+        institutionSelect.innerHTML = '<option value="">Selecciona una institución</option>' + configuredInstitutions
+            .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("") + '<option value="__otra__">Otra institución</option>';
+    }else{
+        institutionSelect.innerHTML = '<option value="I.E. Santa Teresa">I.E. Santa Teresa</option><option value="Universidad">Universidad</option><option value="__otra__">Otra institución</option>';
+    }
+}
+
+function changeInstitutionType(){
+
+    const type =
+        document
+            .getElementById(
+                "studentInstitutionType"
+            )
+            .value;
+
+    document
+        .getElementById(
+            "otherInstitutionBox"
+        )
+        .classList.toggle(
+            "hidden",
+            type !== "__otra__"
+        );
+
+}
+
+
+/* =========================================================
+   START EXAM
+========================================================= */
+
+function startStudentExam(){
+
+    const name =
+        document
+            .getElementById("studentName")
+            .value
+            .trim();
+
+    const group =
+        document
+            .getElementById("studentGroup")
+            .value
+            .trim();
+
+    const type =
+        document
+            .getElementById(
+                "studentInstitutionType"
+            )
+            .value;
+
+
+    let institution = type;
+    let institutionType = type;
+
+
+    if(type === "__otra__"){
+
+        institutionType = "Otra";
+
+        institution =
+            document
+                .getElementById(
+                    "studentOtherInstitution"
+                )
+                .value
+                .trim();
+
+        if(!institution){
+
+            toast(
+                "Escribe el nombre de tu institución."
+            );
+
+            return;
+        }
+
+    }
+
+
+    if(!["I.E. Santa Teresa","Universidad","Otra"].includes(institutionType)){
+        institutionType = "Otra";
+        institution = type;
+    }
+
+
+    if(!name || !group || !institution){
+
+        toast(
+            "Completa tu nombre, grupo e institución."
+        );
+
+        return;
+    }
+
+
+    if(
+        !currentStudentQuestions.length
+    ){
+
+        toast(
+            "La actividad no tiene preguntas."
+        );
+
+        return;
+    }
+
+
+    studentInfo = {
+
+        name,
+
+        group,
+
+        type: institutionType,
+
+        institution
+
+    };
+
+
+    studentExits = 0;
+
+    currentStudentAnswers =
+        new Array(
+            currentStudentQuestions.length
+        ).fill(null);
+
+    currentStudentQuestionIndex = 0;
+
+
+    /*
+     * 0 minutos = tiempo ilimitado.
+     */
+    const activityMinutes =
+        Number(
+            currentStudentActivity.time || 0
+        );
+
+
+    if(
+        !Number.isFinite(
+            activityMinutes
+        ) ||
+        activityMinutes <= 0
+    ){
+
+        remainingSeconds = 0;
+
+    }else{
+
+        remainingSeconds =
+            activityMinutes * 60;
+
+    }
+
+
+    examDeadline =
+        remainingSeconds > 0
+            ? Date.now() + remainingSeconds * 1000
+            : null;
+
+
+    examSubmitting = false;
+
+    examInProgress = true;
+
+    previewMode = false;
+
+
+    document
+        .getElementById("studentStartCard")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("studentExam")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("studentResult")
+        .classList.add("hidden");
+
+
+    renderStudentExam();
+
+
+    if(remainingSeconds > 0){
+
+        startTimer();
+
+    }else{
+
+        updateTimerDisplay();
+
+    }
+
+}
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+function startTimer(){
+
+    stopTimer();
+
+    if(
+        !examDeadline ||
+        !examInProgress ||
+        examSubmitting
+    ){
+
+        updateTimerDisplay();
+
+        return;
+
+    }
+
+
+    updateTimerDisplay();
+
+
+    timerInterval =
+        setInterval(()=>{
+
+            if(
+                !examInProgress ||
+                examSubmitting
+            ){
+
+                stopTimer();
+
+                return;
+
+            }
+
+
+            remainingSeconds =
+                Math.max(
+                    0,
+                    Math.ceil(
+                        (
+                            examDeadline -
+                            Date.now()
+                        ) / 1000
+                    )
+                );
+
+
+            updateTimerDisplay();
+
+
+            if(
+                remainingSeconds <= 0
+            ){
+
+                stopTimer();
+
+                toast(
+                    "El tiempo terminó. La actividad se enviará automáticamente."
+                );
+
+                finishStudentExam(
+                    true
+                );
+
+            }
+
+        },500);
+
+}
+
+
+function stopTimer(){
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval = null;
+
+    }
+
+}
+
+
+function updateTimerDisplay(){
+
+    const display =
+        document
+            .getElementById(
+                "timerDisplay"
+            );
+
+    if(!display){
+        return;
+    }
+
+
+    /*
+     * Sin fecha límite = tiempo ilimitado.
+     */
+    if(!examDeadline){
+
+        display.textContent =
+            "Sin límite";
+
+        display.classList.remove(
+            "danger-time"
+        );
+
+        return;
+
+    }
+
+
+    if(remainingSeconds <= 0){
+
+        display.textContent =
+            "00:00";
+
+        display.classList.remove(
+            "danger-time"
+        );
+
+        return;
+
+    }
+
+
+    const minutes =
+        Math.floor(
+            remainingSeconds / 60
+        );
+
+    const seconds =
+        remainingSeconds % 60;
+
+
+    display.textContent =
+        String(minutes).padStart(2,"0") +
+        ":" +
+        String(seconds).padStart(2,"0");
+
+
+    display.classList.toggle(
+        "danger-time",
+        remainingSeconds <= 30
+    );
+
+}
+
+
+/* =========================================================
+   RENDER STUDENT EXAM
+========================================================= */
+
+function renderStudentExam(){
+
+    if(!currentStudentQuestions.length){
+        return;
+    }
+
+
+    const total =
+        currentStudentQuestions.length;
+
+    const index =
+        currentStudentQuestionIndex;
+
+    const question =
+        currentStudentQuestions[index];
+
+
+    document
+        .getElementById("examProgress")
+        .textContent =
+            `Pregunta ${index + 1} de ${total}`;
+
+
+    const questionContainer =
+        document
+            .getElementById(
+                "studentQuestion"
+            );
+
+
+    const answerContainer =
+        document
+            .getElementById(
+                "studentAnswerArea"
+            );
+
+
+    questionContainer.innerHTML = `
+
+        <div class="question-number">
+            Pregunta ${index + 1}
+        </div>
+
+        <div class="student-question">
+            ${escapeHtml(question.text)}
+        </div>
+
+    `;
+
+
+    answerContainer.innerHTML = "";
+
+
+    const savedAnswer =
+        currentStudentAnswers[index];
+
+
+    if(question.type === "abcd"){
+
+        question.options.forEach(
+            (option,optionIndex)=>{
+
+                const selected =
+                    Number(savedAnswer) ===
+                    optionIndex;
+
+                const label =
+                    document.createElement(
+                        "label"
+                    );
+
+                label.className =
+                    "answer-option" +
+                    (
+                        selected
+                            ? " selected"
+                            : ""
+                    );
+
+                label.innerHTML = `
+
+                    <input
+                        type="radio"
+                        name="studentAnswer"
+                        value="${optionIndex}"
+                        ${selected ? "checked":""}
+                    >
+
+                    <span>
+                        <strong>
+                            ${String.fromCharCode(65 + optionIndex)}.
+                        </strong>
+
+                        ${escapeHtml(option)}
+
+                    </span>
+
+                `;
+
+
+                const radio =
+                    label.querySelector(
+                        "input"
+                    );
+
+
+                radio.addEventListener(
+                    "change",
+                    ()=>{
+
+                        currentStudentAnswers[index] =
+                            Number(radio.value);
+
+                        document
+                            .querySelectorAll(
+                                ".answer-option"
+                            )
+                            .forEach(
+                                el =>
+                                el.classList.remove(
+                                    "selected"
+                                )
+                            );
+
+                        label.classList.add(
+                            "selected"
+                        );
+
+                    }
+                );
+
+
+                answerContainer.appendChild(
+                    label
+                );
+
+            }
+        );
+
+    }
+
+
+    if(question.type === "vf"){
+
+        [
+            {
+                value:true,
+                text:"Verdadero"
+            },
+            {
+                value:false,
+                text:"Falso"
+            }
+        ].forEach(option=>{
+
+            const selected =
+                String(savedAnswer) ===
+                String(option.value);
+
+
+            const label =
+                document.createElement(
+                    "label"
+                );
+
+            label.className =
+                "answer-option" +
+                (
+                    selected
+                        ? " selected"
+                        : ""
+                );
+
+
+            label.innerHTML = `
+
+                <input
+                    type="radio"
+                    name="studentAnswer"
+                    value="${option.value}"
+                    ${selected ? "checked":""}
+                >
+
+                <span>
+                    ${option.text}
+                </span>
+
+            `;
+
+
+            const radio =
+                label.querySelector(
+                    "input"
+                );
+
+
+            radio.addEventListener(
+                "change",
+                ()=>{
+
+                    currentStudentAnswers[index] =
+                        radio.value === "true";
+
+                    document
+                        .querySelectorAll(
+                            ".answer-option"
+                        )
+                        .forEach(
+                            el =>
+                            el.classList.remove(
+                                "selected"
+                            )
+                        );
+
+                    label.classList.add(
+                        "selected"
+                    );
+
+                }
+            );
+
+
+            answerContainer.appendChild(
+                label
+            );
+
+        });
+
+    }
+
+
+    if(question.type === "abierta"){
+
+        const textarea =
+            document.createElement(
+                "textarea"
+            );
+
+        textarea.rows = 6;
+
+        textarea.style.width = "100%";
+
+        textarea.style.padding = "14px";
+
+        textarea.style.border =
+            "1px solid #d1d5db";
+
+        textarea.style.borderRadius =
+            "12px";
+
+        textarea.placeholder =
+            "Escribe tu respuesta...";
+
+        textarea.value =
+            savedAnswer || "";
+
+
+        textarea.addEventListener(
+            "input",
+            ()=>{
+                currentStudentAnswers[index] =
+                    textarea.value;
+            }
+        );
+
+
+        answerContainer.appendChild(
+            textarea
+        );
+
+    }
+
+
+    const previous =
+        document
+            .getElementById(
+                "previousQuestionButton"
+            );
+
+    const next =
+        document
+            .getElementById(
+                "nextQuestionButton"
+            );
+
+    const finish =
+        document
+            .getElementById(
+                "finishQuestionButton"
+            );
+
+
+    previous.classList.toggle(
+        "hidden",
+        index === 0
+    );
+
+
+    next.classList.toggle(
+        "hidden",
+        index >= total - 1
+    );
+
+
+    finish.classList.toggle(
+        "hidden",
+        index !== total - 1
+    );
+
+
+    updateTimerDisplay();
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function nextStudentQuestion(){
+
+    if(
+        currentStudentQuestionIndex <
+        currentStudentQuestions.length - 1
+    ){
+
+        currentStudentQuestionIndex++;
+
+        renderStudentExam();
+
+    }
+
+}
+
+
+function previousStudentQuestion(){
+
+    if(
+        currentStudentQuestionIndex > 0
+    ){
+
+        currentStudentQuestionIndex--;
+
+        renderStudentExam();
+
+    }
+
+}
+
+
+/* =========================================================
+   FINISH EXAM
+========================================================= */
+
+async function finishStudentExam(
+    automatic = false
+){
+
+    if(
+        examSubmitting
+    ){
+
+        return;
+
+    }
+
+
+    if(
+        !studentInfo ||
+        !currentStudentActivity
+    ){
+
+        toast(
+            "No se encontraron los datos de la actividad."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !automatic &&
+        !previewMode
+    ){
+
+        const confirmed =
+            confirm(
+                "¿Seguro que quieres terminar la actividad?"
+            );
+
+        if(!confirmed){
+            return;
+        }
+
+    }
+
+
+    /* ==========================================
+       VISTA PREVIA
+    ========================================== */
+
+    if(previewMode){
+
+        examInProgress = false;
+
+        stopTimer();
+
+        examDeadline = null;
+
+        previewMode = false;
+
+        toast(
+            "Vista previa finalizada."
+        );
+
+        document
+            .getElementById("studentScreen")
+            .classList.add("hidden");
+
+        document
+            .getElementById("app")
+            .classList.remove("hidden");
+
+        showSection(
+            "actividades"
+        );
+
+        return;
+
+    }
+
+
+    examSubmitting = true;
+
+    examInProgress = false;
+
+    stopTimer();
+
+
+    /* ==========================================
+       ASEGURAR QUE EL TIEMPO NO SE PASE
+    ========================================== */
+
+    if(examDeadline){
+
+        remainingSeconds =
+            Math.max(
+                0,
+                Math.ceil(
+                    (
+                        examDeadline -
+                        Date.now()
+                    ) / 1000
+                )
+            );
+
+    }
+
+
+    /*
+       IMPORTANTE:
+
+       Enviamos exactamente el arreglo que
+       espera el RPC de Supabase.
+
+       ABCD:
+       número 0-3
+
+       VF:
+       boolean
+
+       ABIERTA:
+       texto
+
+       Sin respuestas:
+       null
+    */
+
+    const answersToSend =
+        currentStudentAnswers.map(
+            answer => {
+
+                if(
+                    answer === undefined
+                ){
+
+                    return null;
+
+                }
+
+                if(
+                    answer === ""
+                ){
+
+                    return "";
+
+                }
+
+                return answer;
+
+            }
+        );
+
+
+    console.log(
+        "Enviando resultado a Supabase:",
+        {
+            actividad:
+                currentStudentActivity.id,
+
+            estudiante:
+                studentInfo.name,
+
+            grupo:
+                studentInfo.group,
+
+            tipo:
+                studentInfo.type,
+
+            institucion:
+                studentInfo.institution,
+
+            respuestas:
+                answersToSend,
+
+            salidas:
+                studentExits,
+
+            estado:
+                automatic
+                    ? "automatico"
+                    : "terminado"
+        }
+    );
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .rpc(
+                "enviar_resultado",
+                {
+                    p_actividad_id:
+                        currentStudentActivity.id,
+
+                    p_nombre:
+                        studentInfo.name,
+
+                    p_grupo:
+                        studentInfo.group,
+
+                    p_tipo_institucion:
+                        studentInfo.type,
+
+                    p_institucion:
+                        studentInfo.institution,
+
+                    p_respuestas:
+                        answersToSend,
+
+                    p_salidas:
+                        Math.max(
+                            0,
+                            Number(studentExits) || 0
+                        ),
+
+                    p_estado:
+                        automatic
+                            ? "automatico"
+                            : "terminado"
+                }
+            );
+
+
+    /* ==========================================
+       ERROR REAL DE SUPABASE
+    ========================================== */
+
+    if(error){
+
+        console.error(
+            "ERROR RPC enviar_resultado:",
+            error
+        );
+
+
+        examSubmitting = false;
+
+        examInProgress = true;
+
+
+        const errorMessage =
+            error.message ||
+            error.details ||
+            error.hint ||
+            JSON.stringify(error) ||
+            "Error desconocido";
+
+
+        toast(
+            "No se pudo guardar: " +
+            errorMessage
+        );
+
+
+        return;
+
+    }
+
+
+    /* ==========================================
+       RESULTADO CORRECTO
+    ========================================== */
+
+    console.log(
+        "Resultado guardado:",
+        data
+    );
+
+
+    let resultData = data;
+
+
+    if(Array.isArray(resultData)){
+
+        resultData =
+            resultData[0];
+
+    }
+
+
+    examSubmitting = true;
+
+    examInProgress = false;
+
+    stopTimer();
+
+    examDeadline = null;
+
+
+    document
+        .getElementById("studentExam")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("studentResult")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("studentGrade")
+        .textContent =
+            Number(
+                resultData?.nota ?? 0
+            ).toFixed(1);
+
+
+    document
+        .getElementById("studentCorrect")
+        .textContent =
+            resultData?.correctas ?? 0;
+
+
+    document
+        .getElementById("studentIncorrect")
+        .textContent =
+            resultData?.incorrectas ?? 0;
+
+
+    document
+        .getElementById("studentTotal")
+        .textContent =
+            resultData?.total ??
+            currentStudentQuestions.length;
+
+
+    toast(
+        "Resultado guardado correctamente."
+    );
+
+}
+
+
+/* =========================================================
+   VISIBILITY / SALIDAS
+========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    ()=>{
+
+        if(
+            document.visibilityState === "hidden" &&
+            examInProgress &&
+            !examSubmitting &&
+            !previewMode &&
+            studentInfo &&
+            currentStudentQuestions.length
+        ){
+
+            studentExits++;
+
+            console.log(
+                "Salida registrada:",
+                studentExits
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   RESULTS
+========================================================= */
+
+async function loadResults(){
+
+    if(!currentUser){
+        return;
+    }
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("resultados")
+            .select("*")
+            .eq("profesor_id",currentUser.id)
+            .order("fecha",{
+                ascending:false
+            });
+
+    if(error){
+
+        console.error(
+            "Error cargando resultados:",
+            error
+        );
+
+        toast(
+            "Error cargando resultados: " +
+            error.message
+        );
+
+        return;
+    }
+
+    results =
+        data || [];
+
+    updateResultFilters();
+    renderResults();
+
+    renderDashboard();
+
+}
+
+
+function updateActivityFilter(){
+
+    const select =
+        document
+            .getElementById(
+                "resultActivityFilter"
+            );
+
+    if(!select){
+        return;
+    }
+
+    const previous =
+        select.value;
+
+    select.innerHTML =
+        `<option value="">
+            Todas las actividades
+        </option>`;
+
+
+    activities.forEach(activity=>{
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            activity.id;
+
+        option.textContent =
+            activity.titulo;
+
+        select.appendChild(
+            option
+        );
+
+    });
+
+
+    select.value =
+        previous;
+
+}
+
+function updateResultFilters(){
+    const filterDefinitions = [
+        {
+            id:"resultGroupFilter",
+            field:"grupo",
+            defaultLabel:"Todos los grupos"
+        },
+        {
+            id:"resultInstitutionFilter",
+            field:"institucion",
+            defaultLabel:"Todas las instituciones"
+        }
+    ];
+
+    filterDefinitions.forEach(({ id, field, defaultLabel }) => {
+        const select = document.getElementById(id);
+        if(!select) return;
+
+        const previous = select.value;
+        const values = [...new Set(
+            results
+                .map(result => String(result[field] || "").trim())
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, "es"));
+
+        select.innerHTML = "";
+        const allOption = document.createElement("option");
+        allOption.value = "";
+        allOption.textContent = defaultLabel;
+        select.appendChild(allOption);
+
+        values.forEach(value => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+
+        select.value = values.includes(previous) ? previous : "";
+    });
+}
+
+
+function renderResults(){
+
+    const tbody =
+        document
+            .getElementById(
+                "resultsTable"
+            );
+
+    if(!tbody){
+        return;
+    }
+
+
+    const search =
+        (
+            document
+                .getElementById(
+                    "resultSearch"
+                )
+                ?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const activityFilter =
+        document
+            .getElementById(
+                "resultActivityFilter"
+            )
+            ?.value || "";
+
+    const groupFilter =
+        document
+            .getElementById("resultGroupFilter")
+            ?.value || "";
+
+    const institutionFilter =
+        document
+            .getElementById("resultInstitutionFilter")
+            ?.value || "";
+
+
+    const sort =
+        document
+            .getElementById(
+                "resultSort"
+            )
+            ?.value || "date";
+
+
+    let filtered =
+        results.filter(
+            result => {
+
+                const matchesSearch =
+                    !search ||
+                    String(
+                        result.estudiante || ""
+                    )
+                    .toLowerCase()
+                    .includes(search);
+
+
+                const matchesActivity =
+                    !activityFilter ||
+                    result.actividad_id ===
+                    activityFilter;
+
+                const matchesGroup =
+                    !groupFilter ||
+                    String(result.grupo || "").trim() === groupFilter;
+
+                const matchesInstitution =
+                    !institutionFilter ||
+                    String(result.institucion || "").trim() === institutionFilter;
+
+
+                return (
+                    matchesSearch &&
+                    matchesActivity &&
+                    matchesGroup &&
+                    matchesInstitution
+                );
+
+            }
+        );
+
+
+    if(sort === "name"){
+
+        filtered.sort(
+            (a,b)=>
+                String(a.estudiante || "")
+                    .localeCompare(
+                        String(b.estudiante || "")
+                    )
+        );
+
+    }
+
+
+    if(sort === "grade"){
+
+        filtered.sort(
+            (a,b)=>
+                Number(b.nota || 0) -
+                Number(a.nota || 0)
+        );
+
+    }
+
+
+    if(sort === "date"){
+
+        filtered.sort(
+            (a,b)=>
+                new Date(b.fecha) -
+                new Date(a.fecha)
+        );
+
+    }
+
+
+    if(!filtered.length){
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td colspan="10" style="
+                    text-align:center;
+                    color:#6b7280;
+                    padding:30px;
+                ">
+                    No hay resultados.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            result => `
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(result.estudiante)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(result.actividad)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(result.grupo || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(result.institucion || "")}
+                    </td>
+
+                    <td class="grade">
+                        ${Number(result.nota || 0).toFixed(1)}
+                    </td>
+
+                    <td>
+                        ${result.correctas ?? 0}
+                    </td>
+
+                    <td>
+                        ${result.incorrectas ?? 0}
+                    </td>
+
+                    <td>
+                        ${result.salidas ?? 0}
+                    </td>
+
+                    <td>
+                        ${formatDate(result.fecha)}
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="danger"
+                            style="padding:7px 9px;"
+                            onclick="deleteResult('${result.id}')"
+                        >
+                            Eliminar
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `
+        ).join("");
+
+}
+
+
+function formatDate(date){
+
+    if(!date){
+        return "—";
+    }
+
+    return new Date(date)
+        .toLocaleString(
+            "es-CO"
+        );
+
+}
+
+
+async function deleteResult(id){
+
+    if(!confirm(
+        "¿Eliminar este resultado?"
+    )){
+        return;
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("resultados")
+            .delete()
+            .eq("id",id)
+            .eq("profesor_id",currentUser.id);
+
+
+    if(error){
+
+        toast(
+            "No se pudo eliminar: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    await loadResults();
+
+    toast(
+        "Resultado eliminado."
+    );
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function renderDashboard(){
+
+    const activityCount =
+        activities.length;
+
+    const resultCount =
+        results.length;
+
+
+    const average =
+        resultCount
+            ? results.reduce(
+                (sum,result)=>
+                    sum +
+                    Number(
+                        result.nota || 0
+                    ),
+                0
+            ) / resultCount
+            : 0;
+
+
+    document
+        .getElementById(
+            "statActivities"
+        )
+        .textContent =
+            activityCount;
+
+
+    document
+        .getElementById(
+            "statResults"
+        )
+        .textContent =
+            resultCount;
+
+
+    document
+        .getElementById(
+            "statAverage"
+        )
+        .textContent =
+            average.toFixed(1);
+
+
+    const last =
+        results[0];
+
+
+    document
+        .getElementById(
+            "statLast"
+        )
+        .textContent =
+            last
+                ? Number(last.nota || 0).toFixed(1)
+                : "—";
+
+
+    const recent =
+        document
+            .getElementById(
+                "recentActivity"
+            );
+
+
+    if(!last){
+
+        recent.textContent =
+            "No hay resultados todavía.";
+
+        return;
+
+    }
+
+
+    recent.innerHTML = `
+
+        <strong>
+            ${escapeHtml(last.estudiante)}
+        </strong>
+
+        obtuvo
+
+        <strong style="color:#4f46e5;">
+            ${Number(last.nota || 0).toFixed(1)}
+        </strong>
+
+        en
+
+        <strong>
+            ${escapeHtml(last.actividad)}
+        </strong>
+
+        <br>
+
+        <small style="color:#6b7280;">
+            ${formatDate(last.fecha)}
+        </small>
+
+    `;
+
+}
+
+
+/* =========================================================
+   REALTIME
+========================================================= */
+
+function setupRealtime(){
+
+    if(
+        !currentUser ||
+        realtimeChannel
+    ){
+
+        return;
+
+    }
+
+
+    realtimeChannel =
+        supabaseClient
+            .channel(
+                "eduquiz-resultados-" +
+                currentUser.id
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event:"*",
+                    schema:"public",
+                    table:"resultados",
+                    filter:
+                        "profesor_id=eq." +
+                        currentUser.id
+                },
+                async ()=>{
+                    await loadResults();
+                }
+            )
+            .subscribe();
+
+}
+
+
+/* =========================================================
+   SHOW STUDENT INTERFACE
+========================================================= */
+
+function showStudentInterface(){
+
+    document
+        .getElementById("authScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("app")
+        .classList.add("hidden");
+
+    document
+        .getElementById("studentScreen")
+        .classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+async function init(){
+
+    const hash =
+        window.location.hash;
+
+    const hashParams = new URLSearchParams(hash.replace(/^#/,""));
+
+    if(hashParams.get("error_code") === "otp_expired"){
+        document.getElementById("authScreen").classList.remove("hidden");
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("studentScreen").classList.add("hidden");
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("registerForm").classList.add("hidden");
+        document.getElementById("resetPasswordForm").classList.add("hidden");
+        toast("El enlace de recuperación expiró. Solicita uno nuevo.");
+        return;
+    }
+
+    if(hashParams.get("type") === "recovery"){
+        document.getElementById("authScreen").classList.remove("hidden");
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("studentScreen").classList.add("hidden");
+        document.getElementById("loginForm").classList.add("hidden");
+        document.getElementById("registerForm").classList.add("hidden");
+        document.getElementById("resetPasswordForm").classList.remove("hidden");
+
+        supabaseClient.auth.onAuthStateChange((event) => {
+            if(event === "PASSWORD_RECOVERY"){
+                document.getElementById("resetPasswordForm").classList.remove("hidden");
+            }
+        });
+
+        return;
+    }
+
+
+    if(
+        hash.startsWith("#respuestas=")
+    ){
+        const id = decodeURIComponent(hash.substring("#respuestas=".length));
+        if(id){
+            await loadAnswerKey(id);
+            return;
+        }
+    }
+
+
+    if(
+        hash.startsWith("#actividad=")
+    ){ 
+
+        const id =
+            decodeURIComponent(
+                hash.substring(
+                    "#actividad=".length
+                )
+            );
+
+
+        if(id){
+
+            await loadPublicActivity(
+                id
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    const {
+        data
+    } =
+        await supabaseClient
+            .auth
+            .getSession();
+
+
+    if(data.session){
+
+        currentUser =
+            data.session.user;
+
+        await initializeTeacher();
+
+    }else{
+
+        document
+            .getElementById("authScreen")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("app")
+            .classList.add("hidden");
+
+        document
+            .getElementById("studentScreen")
+            .classList.add("hidden");
+
+    }
+
+
+    supabaseClient
+        .auth
+        .onAuthStateChange(
+            async(event,session)=>{
+
+                if(
+                    event === "SIGNED_IN" &&
+                    session
+                ){
+
+                    currentUser =
+                        session.user;
+
+                }
+
+                if(event === "PASSWORD_RECOVERY"){
+                    document.getElementById("authScreen").classList.remove("hidden");
+                    document.getElementById("app").classList.add("hidden");
+                    document.getElementById("loginForm").classList.add("hidden");
+                    document.getElementById("registerForm").classList.add("hidden");
+                    document.getElementById("resetPasswordForm").classList.remove("hidden");
+                }
+
+                if(
+                    event === "SIGNED_OUT"
+                ){
+
+                    currentUser = null;
+
+                }
+
+            }
+        );
+
+}
+
+
+window.addEventListener(
+    "beforeunload",
+    event => {
+
+        if(
+            examInProgress &&
+            !examSubmitting &&
+            !previewMode
+        ){
+
+         
+        }
+
+    }
+);
+
+
+document.addEventListener("input", event => {
+    if(event.target.closest("#section-editor")) scheduleDraftSave();
+});
+document.addEventListener("change", event => {
+    if(event.target.closest("#section-editor")) scheduleDraftSave();
+});
+window.addEventListener("pagehide", saveActivityDraft);
+
+init();
+
+</script>
+
+</body>
+</html>
